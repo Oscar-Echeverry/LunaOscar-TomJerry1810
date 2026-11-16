@@ -31,6 +31,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         vista/pantallainicio.h
         vista/pantallainicio.cpp
         vista/inicio.ui
+        logica/entidad.h
+        logica/entidad.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TomyJerry APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
