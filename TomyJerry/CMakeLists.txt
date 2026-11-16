@@ -17,6 +17,8 @@ set(PROJECT_SOURCES
         widget.cpp
         widget.h
         widget.ui
+        logica/vector2.h
+        logica/configuracion.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -24,6 +26,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         Recursos.qrc
+        logica/temporizador.h
+        logica/temporizador.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TomyJerry APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
