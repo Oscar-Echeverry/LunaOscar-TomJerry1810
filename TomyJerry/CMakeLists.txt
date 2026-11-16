@@ -28,6 +28,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Recursos.qrc
         logica/temporizador.h
         logica/temporizador.cpp
+        vista/pantallainicio.h
+        vista/pantallainicio.cpp
+        vista/inicio.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET TomyJerry APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
