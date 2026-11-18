@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui version="4.0">
+ <class>PantallaResultado</class>
+ <widget class="QFrame" name="paginaResultado">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>710</width>
+    <height>370</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>650</width>
+    <height>345</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Resultado del Nivel 1</string>
+  </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="WindowText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>244</green>
+        <blue>214</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget { font-family: "Segoe UI"; font-size: 14px; color: #fff4d6; }
+QLabel { background: transparent; border: none; }
+QPushButton { background-color: #f1ba4c; color: #182631; border: none; border-radius: 9px; padding: 8px 16px; font-weight: 700; }
+QPushButton:hover { background-color: #ffd27e; }
+QPushButton:pressed { background-color: #dca33e; }
+QPushButton[secundario="true"] { background-color: #304a56; color: #fff4d6; }
+QPushButton[secundario="true"]:hover { background-color: #405e6b; }
+QFrame#paginaResultado { background-color: #182631; border: 1px solid #f1ba4c; border-radius: 18px; }
+QLabel#tituloResultado { font-size: 28px; font-weight: 700; } QLabel#firmaResultado { color: #f1ba4c; font-size: 12px; font-weight: 700; } QLabel#detalleResultado { font-size: 16px; } QLabel#puntosResultado { color: #f1ba4c; font-size: 23px; font-weight: 700; }
+</string>
+  </property>
+  <layout class="QVBoxLayout" name="layoutResultado">
+   <property name="spacing">
+    <number>9</number>
+   </property>
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="topMargin">
+    <number>18</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <property name="bottomMargin">
+    <number>18</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="firmaResultado">
+     <property name="text">
+      <string>TOM Y JERRY · CAOS EN 1810</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="tituloResultado">
+     <property name="text">
+      <string>¡NIVEL 1 COMPLETADO!</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="detalleResultado">
+     <property name="text">
+      <string>Jerry reunió los seis quesos, encontró la llave
+y llegó a la tienda de Llorente.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="puntosResultado">
+     <property name="text">
+      <string>PUNTOS: 0</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QPushButton" name="botonRepetir">
+     <property name="minimumSize">
+      <size>
+       <width>280</width>
+       <height>42</height>
+      </size>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+     <property name="text">
+      <string>Volver a jugar · R</string>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QPushButton" name="botonNuevaPartidaResultado">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+     <property name="text">
+      <string>Nueva partida · N</string>
+     </property>
+     <property name="secundario" stdset="0">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
+</ui>
