@@ -3,11 +3,14 @@
 
 #include <QFrame>
 
-namespace Ui { class PantallaInicio; }
+namespace Ui {
+class paginaInicio;
+}
 
 class PantallaInicio : public QFrame
 {
     Q_OBJECT
+
 public:
     explicit PantallaInicio(QWidget *parent = nullptr);
     ~PantallaInicio() override;
@@ -16,7 +19,7 @@ signals:
     void jugar();
 
 private:
-    Ui::PantallaInicio *ui;
+    Ui::paginaInicio *ui;
 };
 
 #endif

@@ -72,7 +72,7 @@ void Obstaculo::recibirImpulso(const Vector2 &impulso) { establecerVelocidad(imp
 void Obstaculo::aplicardaño(Personaje &personaje)
 {
     if (rectanguloColision().adjusted(4, 5, -4, -2).intersects(personaje.rectanguloColision()))
-        personaje.recibirdaño(daño);
+        personaje.recibirDaño(daño);
 }
 const Vector2 &Obstaculo::obtenerCentro() const { return centro; }
 double Obstaculo::obtenerAmplitud() const { return amplitud; }
