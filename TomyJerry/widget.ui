@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ui version="4.0">
  <class>Widget</class>
  <widget class="QWidget" name="Widget">
@@ -6,14 +6,625 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1120</width>
+    <height>630</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Widget</string>
+  <property name="minimumSize">
+   <size>
+    <width>900</width>
+    <height>600</height>
+   </size>
   </property>
+  <property name="windowTitle">
+   <string>Tom y Jerry: Caos en 1810 — La plaza de Santafé</string>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QWidget { font-family: "Segoe UI"; font-size: 14px; color: #fff4d6; }
+QWidget#Widget, QFrame#cabecera, QFrame#barraIndicadores { background-color: #182631; }
+QLabel { background: transparent; border: none; }
+QLabel#tituloJuego { color: #f1ba4c; font-size: 21px; font-weight: 700; }
+QLabel#subtituloJuego, QLabel#etiquetaFecha { font-size: 12px; }
+QFrame#tarjetaVidas, QFrame#tarjetaQuesos, QFrame#tarjetaLlave, QFrame#tarjetaPuntos, QFrame#tarjetaCarrera { background-color: #263d48; border-radius: 9px; }
+QLabel#etiquetaVidas, QLabel#etiquetaQuesos, QLabel#etiquetaLlave, QLabel#etiquetaPuntos, QLabel#etiquetaCarrera { font-weight: 700; }
+QLabel#etiquetaVidas { color: #ff8a80; }
+QLabel#etiquetaCarrera { color: #f1ba4c; }
+QProgressBar { background: #51636b; border: none; border-radius: 2px; }
+QProgressBar::chunk { background: #f1ba4c; border-radius: 2px; }
+QLabel#etiquetaAviso { background: #fff4d6; color: #182631; padding: 6px 12px; border-radius: 9px; font-weight: 600; }
+QStackedWidget#panelEstado { background-color: transparent; border: none; }
+QFrame#paginaInicio, QFrame#paginaPausa, QFrame#paginaResultado { background-color: #182631; border: 1px solid #f1ba4c; border-radius: 18px; }
+QWidget#vistaJuego { background-color: #263d48; }
+QLabel#etiquetaControles { background: #182631; color: #d5dfda; font-size: 13px; }
+QPushButton { background: #f1ba4c; color: #182631; border: none; border-radius: 9px; padding: 8px 16px; font-weight: 700; }
+QPushButton:hover { background: #ffd27e; }
+QPushButton:pressed { background: #dca33e; }
+QPushButton[secundario="true"] { background: #304a56; color: #fff4d6; }
+QPushButton[secundario="true"]:hover { background: #405e6b; }
+QPushButton:disabled { background: #30414b; color: #87989e; }
+   </string>
+  </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="WindowText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>244</green>
+        <blue>214</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>24</red>
+        <green>38</green>
+        <blue>49</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="layoutPrincipal">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="cabecera">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>64</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>64</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="layoutCabecera">
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <item>
+       <layout class="QVBoxLayout" name="layoutTitulo">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="tituloJuego">
+          <property name="text">
+           <string>TOM Y JERRY: CAOS EN 1810</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="subtituloJuego">
+          <property name="text">
+           <string>NIVEL 1 · LA PLAZA DE SANTAFÉ</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="espacioCabecera">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="etiquetaFecha">
+        <property name="text">
+         <string>SANTAFÉ · 20 DE JULIO DE 1810</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="botonPausa">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="text">
+         <string>Pausa · Esc</string>
+        </property>
+        <property name="secundario" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="barraIndicadores">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>66</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>66</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="layoutIndicadores" stretch="16,16,15,16,37">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="leftMargin">
+       <number>16</number>
+      </property>
+      <property name="topMargin">
+       <number>7</number>
+      </property>
+      <property name="rightMargin">
+       <number>16</number>
+      </property>
+      <property name="bottomMargin">
+       <number>7</number>
+      </property>
+      <item>
+       <widget class="QFrame" name="tarjetaVidas">
+        <layout class="QHBoxLayout" name="layoutVidas">
+         <item>
+          <widget class="QLabel" name="etiquetaVidas">
+           <property name="text">
+            <string>VIDAS: ♥ ♥ ♥</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="tarjetaQuesos">
+        <layout class="QHBoxLayout" name="layoutQuesos">
+         <item>
+          <widget class="QLabel" name="etiquetaQuesos">
+           <property name="text">
+            <string>QUESOS: 0 / 6</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="tarjetaLlave">
+        <layout class="QHBoxLayout" name="layoutLlave">
+         <item>
+          <widget class="QLabel" name="etiquetaLlave">
+           <property name="text">
+            <string>LLAVE: NO</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="tarjetaPuntos">
+        <layout class="QHBoxLayout" name="layoutPuntos">
+         <item>
+          <widget class="QLabel" name="etiquetaPuntos">
+           <property name="text">
+            <string>PUNTOS: 0</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="tarjetaCarrera">
+        <property name="minimumSize">
+         <size>
+          <width>270</width>
+          <height>0</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="layoutCarrera">
+         <property name="spacing">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="etiquetaCarrera">
+           <property name="text">
+            <string>CARRERA: DISPONIBLE</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QProgressBar" name="barraCarrera">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>5</height>
+            </size>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>1000</number>
+           </property>
+           <property name="textVisible">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="VistaJuego" name="vistaJuego">
+     <layout class="QVBoxLayout" name="layoutEscenario">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="topMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="etiquetaAviso">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Reúne 6 quesos y la llave. La tienda está al final de la calle.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="espacioSuperiorPanel">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>1</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item alignment="Qt::AlignHCenter">
+       <widget class="QStackedWidget" name="panelEstado">
+        <property name="minimumSize">
+         <size>
+          <width>650</width>
+          <height>345</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>710</width>
+          <height>370</height>
+         </size>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="PantallaInicio" name="paginaInicio">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>244</green>
+               <blue>214</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="PantallaPausa" name="paginaPausa">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>244</green>
+               <blue>214</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="PantallaResultado" name="paginaResultado">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>244</green>
+               <blue>214</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>24</red>
+               <green>38</green>
+               <blue>49</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <spacer name="espacioInferiorPanel">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>1</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="etiquetaControles">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>← → Caminar     ·     ESPACIO Saltar     ·     MAYÚS Correr     ·     E Entrar     ·     ESC Pausa</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
- <resources/>
- <connections/>
+ <customwidgets>
+  <customwidget>
+   <class>VistaJuego</class>
+   <extends>QWidget</extends>
+   <header>vista/vistajuego.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PantallaInicio</class>
+   <extends>QFrame</extends>
+   <header>vista/pantallainicio.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PantallaPausa</class>
+   <extends>QFrame</extends>
+   <header>vista/pantallapausa.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PantallaResultado</class>
+   <extends>QFrame</extends>
+   <header>vista/pantallaresultado.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="Recursos.qrc" />
+ </resources>
+ <connections />
 </ui>

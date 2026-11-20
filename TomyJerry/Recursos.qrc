@@ -1,20 +1,20 @@
 <RCC>
     <qresource prefix="/Pantallas">
-        <file>Pantallas/Nivel 1/Balcones coloniales con montañas andinas-1.png</file>
-        <file>Pantallas/Nivel 1/Casitas blancas bajo montañas andinas-2.png</file>
+        <file>Pantallas/Nivel 1/Balcones coloniales con montanas andinas-1.png</file>
+        <file>Pantallas/Nivel 1/Casitas blancas bajo montanas andinas-2.png</file>
         <file>Pantallas/Nivel 1/Entrada colonial al barrio mercantil-5.png</file>
-        <file>Pantallas/Nivel 1/Plaza de mercado colonial en Bogotá-3.png</file>
+        <file>Pantallas/Nivel 1/Plaza de mercado colonial en Bogota-3.png</file>
         <file>Pantallas/Nivel 1/Tienda Llorente en la calle colonial-4.png</file>
         <file>Pantallas/Nivel 2/Entrada colonial de tienda bogotana-1.png</file>
-        <file>Pantallas/Nivel 2/Exhibición de cerámica colonial-3.png</file>
+        <file>Pantallas/Nivel 2/Exhibicion de ceramica colonial-3.png</file>
         <file>Pantallas/Nivel 2/Mostrador colonial de la tienda-4.png</file>
         <file>Pantallas/Nivel 2/Pasillo de telas coloniales-2.png</file>
         <file>Pantallas/Nivel 2/Salida trasera al patio colonial-5.png</file>
         <file>Pantallas/Nivel 3/Fachada del Cabildo con puerta abierta-1.png</file>
-        <file>Pantallas/Nivel 3/Galería del Cabildo al atardecer-3.png</file>
+        <file>Pantallas/Nivel 3/Galeria del Cabildo al atardecer-3.png</file>
         <file>Pantallas/Nivel 3/Patio del Cabildo al atardecer-4.png</file>
         <file>Pantallas/Nivel 3/Plaza colonial rumbo al Cabildo-2.png</file>
-        <file>Pantallas/Nivel 3/Salón del Cabildo al atardecer-5.png</file>
+        <file>Pantallas/Nivel 3/Salon del Cabildo al atardecer-5.png</file>
     </qresource>
     <qresource prefix="/sprites">
         <file>Sprites/1/antorcha_001.png</file>

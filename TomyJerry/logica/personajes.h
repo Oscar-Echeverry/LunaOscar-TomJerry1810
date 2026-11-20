@@ -13,7 +13,7 @@ class Personaje : public Entidad
 public:
     Personaje(Vector2 posicion, double ancho, double alto, int vidas, double velocidadBase);
     void mover(const Vector2 &direccion, double dt);
-    virtual void recibirDañio(int cantidad);
+    virtual void recibirDaño(int cantidad);
     bool estaVivo() const;
     bool estaEnSuelo() const;
     void establecerEnSuelo(bool valor);
