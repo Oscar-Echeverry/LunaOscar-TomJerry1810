@@ -1,7 +1,7 @@
 #include "ia.h"
-#include "logica/personajes.h"
-#include "logica/niveles.h"
-#include "logica/configuracion.h"
+#include "../logica/personajes.h"
+#include "../logica/niveles.h"
+#include "../logica/configuracion.h"
 
 #include <algorithm>
 #include <cmath>
