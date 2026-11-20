@@ -1,7 +1,7 @@
 #ifndef PERSONAJES_H
 #define PERSONAJES_H
 #include "entidad.h"
-#include "ia/ia.h"
+#include "../ia/ia.h"
 
 class FisicaJuego;
 class Objeto;

@@ -1,6 +1,6 @@
 #ifndef IA_H
 #define IA_H
-#include "logica/vector2.h"
+#include "../logica/vector2.h"
 #include <array>
 
 using namespace std;
