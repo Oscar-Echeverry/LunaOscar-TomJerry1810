@@ -86,6 +86,7 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         vista/recursosgraficos.cpp
         vista/vistajuego.cpp
         juego.h
+        juego.cpp
     )
 
 else()
