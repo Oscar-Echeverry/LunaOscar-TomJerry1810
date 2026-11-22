@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QLinearGradient>
 #include <algorithm>
+#include <QDebug>
 
 using namespace std;
 
@@ -78,20 +79,23 @@ void RecursosGraficos::cargarAnimacion(const QString &nombre, int carpeta,
 void RecursosGraficos::cargarRecursos()
 {
     const QStringList nombresFondos = {
-        QStringLiteral("Balcones coloniales con montañas andinas-1.png"),
-        QStringLiteral("Casitas blancas bajo montañas andinas-2.png"),
-        QStringLiteral("Plaza de mercado colonial en Bogotá-3.png"),
+        QStringLiteral("Balcones coloniales con montanas andinas-1.png"),
+        QStringLiteral("Casitas blancas bajo montanas andinas-2.png"),
+        QStringLiteral("Plaza de mercado colonial en Bogota-3.png"),
         QStringLiteral("Entrada colonial al barrio mercantil-5.png"),
         QStringLiteral("Tienda Llorente en la calle colonial-4.png")
     };
 
     for (const QString &nombre : nombresFondos) {
         const QString ruta = ":/Pantallas/Pantallas/Nivel 1/" + nombre;
-
         QPixmap fondo(ruta);
 
-        if (fondo.isNull())
+        if (fondo.isNull()) {
             recursosFaltantes.append(ruta);
+            qWarning() << "IMAGEN NO ENCONTRADA:" << ruta;
+        } else {
+            qDebug() << "IMAGEN CARGADA:" << ruta;
+        }
 
         fondos.append(fondo);
     }
