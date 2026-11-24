@@ -28,6 +28,7 @@ bool Personaje::estaVivo() const { return vidas > 0; }
 bool Personaje::estaEnSuelo() const { return enSuelo; }
 void Personaje::establecerEnSuelo(bool valor) { enSuelo = valor; }
 int Personaje::obtenerVidas() const { return vidas; }
+void Personaje::establecerVidas(int cantidad) { vidas = std::max(0, cantidad); }
 bool Personaje::miraHaciaDerecha() const { return miraDerecha; }
 double Personaje::obtenerVelocidadBase() const { return velocidadBase; }
 
@@ -42,7 +43,8 @@ void Jerry::actualizar(double dt)
         establecerVelocidad(velocidad);
         return;
     }
-    const double factor = tieneFlorero ? 0.75 : (tiempoAgilidad > 0 ? 1.6 : 1.0);
+    const double factor = (tieneFlorero ? 0.75 : 1.0)
+                          * ((tiempoAgilidad > 0 || carreraTienda) ? 1.6 : 1.0);
     mover({direccion * factor, 0}, dt);
 }
 
@@ -57,7 +59,7 @@ void Jerry::recoger(Objeto &objeto) { objeto.aplicarEfecto(*this); }
 
 void Jerry::activarAgilidad()
 {
-    if (tiempoAgilidad == 0 && tiempoRecarga == 0 && !tieneFlorero && !estaHerido()) {
+    if (tiempoAgilidad == 0 && tiempoRecarga == 0 && !estaHerido()) {
         tiempoAgilidad = 2;
         tiempoRecarga = 6;
     }
@@ -89,6 +91,12 @@ void Jerry::recibirDaño(int cantidad)
 }
 
 void Jerry::perderVida() { recibirDaño(1); }
+void Jerry::restablecerVidas()
+{
+    establecerVidas(3);
+    tiempoHerida = 0;
+}
+void Jerry::activarProteccion(double segundos) { proteccion = std::max(proteccion, std::max(0.0, segundos)); }
 void Jerry::activarSaltoMejorado(double segundos) { tiempoSaltoMejorado = segundos; }
 void Jerry::establecerDireccion(int valor) { direccion = std::clamp(valor, -1, 1); }
 
@@ -105,6 +113,16 @@ void Jerry::sumarQueso(int cantidad) { quesos += cantidad; }
 void Jerry::sumarMoneda(int valor) { ++monedas; puntos += valor; }
 void Jerry::establecerLlave(bool valor) { tieneLlave = valor; }
 void Jerry::establecerFlorero(bool valor) { tieneFlorero = valor; }
+void Jerry::establecerAgachado(bool valor) { agachado = valor; }
+bool Jerry::estaAgachado() const { return agachado; }
+void Jerry::establecerCarreraTienda(bool valor) { carreraTienda = valor; }
+QRectF Jerry::rectanguloColision() const
+{
+    if (!agachado)
+        return Entidad::rectanguloColision();
+    const Vector2 posicion = obtenerPosicion();
+    return QRectF(posicion.x - 15, posicion.y - 30, 30, 30);
+}
 int Jerry::obtenerQuesos() const { return quesos; }
 int Jerry::obtenerMonedas() const { return monedas; }
 int Jerry::obtenerPuntos() const { return puntos; }

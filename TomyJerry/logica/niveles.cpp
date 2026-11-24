@@ -197,7 +197,7 @@ void NivelCalles::cargar()
                   {"campesino", 3750, 3750, 536, 98, 42, 12, -1},
                   {"dama", 4550, 4550, 532, 93, 38, 10, -1}};
     obtenerTom().reiniciar(false);
-    mostrarMensaje("¡Toma ventaja! Mantén Mayús para correr. Reúne los 6 quesos y la llave.");
+    mostrarMensaje("¡Toma ventaja! Mantén Mayús o pulsa Bloq Mayús para correr. Reúne los 6 quesos y la llave.");
 }
 
 void NivelCalles::configurarDificultad(int dificultad)
@@ -284,11 +284,208 @@ bool NivelCalles::verificarVictoria(const Jerry &jugador) const
            && jugador.estaEnSuelo() && jugador.obtenerPosicion().y == Configuracion::sueloY;
 }
 
-NivelTienda::NivelTienda() : Nivel(2), llorente(std::make_unique<Llorente>()) {}
-void NivelTienda::cargar() { prepararCarga(); }
-void NivelTienda::actualizar(double, Jerry &) {}
-bool NivelTienda::verificarVictoria(const Jerry &) const { return false; }
-bool NivelTienda::disponible() const { return false; }
+NivelTienda::NivelTienda() : Nivel(2), llorente(std::make_unique<Llorente>())
+{
+    anchoMundo = Configuracion::anchoVista * 5;
+    puertaX = Configuracion::anchoVista * 3 + 490;
+}
+
+void NivelTienda::cargar()
+{
+    prepararCarga();
+    tiempo = 0;
+    tiempoRestanteNivel = 60;
+    esperaLanzamiento = 1.2;
+    esperaReinicio = 0;
+    oreroVisible = false;
+    cargando = false;
+    turnoEntregado = false;
+    lanzamientos = 0;
+    oreroX = oreroY = velocidadOreroX = velocidadOreroY = 0;
+    objetivoOreroX = avisoX = 0;
+    objetosCaida.clear();
+    siguienteObjetoX = 90 + ((197 + 480) % (int(anchoMundo) - 180));
+    esperaObjeto = 1.0;
+    objetosGenerados = 0;
+    letreroX = 560;
+    direccionLetrero = 1;
+    plataformas.clear();
+    habitantes.clear();
+    puntosSeguros.clear();
+    obtenerTom().reiniciar(false);
+    obtenerTom().establecerPosicion({40, Configuracion::sueloY});
+    obtenerTom().retirarse(3.5);
+    mostrarMensaje("¡El florero salió volando! Espacio para atraparlo; llévalo al mostrador y pulsa E.");
+}
+
+void NivelTienda::actualizar(double dt, Jerry &jugador)
+{
+    if (dt <= 0 || turnoEntregado)
+        return;
+    tiempo += dt;
+    tiempoRestanteNivel = std::max(0.0, tiempoRestanteNivel - dt);
+    tiempoMensaje = std::max(0.0, tiempoMensaje - dt);
+
+    esperaReinicio = std::max(0.0, esperaReinicio - dt);
+    if (!oreroVisible && !cargando && esperaReinicio == 0) {
+        esperaLanzamiento -= dt;
+        if (esperaLanzamiento <= 0) {
+            ++lanzamientos;
+            objetivoOreroX = lanzamientos == 1
+                                 ? 318
+                                 : std::clamp(jugador.obtenerPosicion().x
+                                                  + (lanzamientos % 2 ? 115 : -115),
+                                              120.0, anchoMundo - 120);
+            avisoX = objetivoOreroX;
+            oreroX = objetivoOreroX - (lanzamientos % 2 ? 145 : -145);
+            oreroY = 205;
+            velocidadOreroX = (objetivoOreroX - oreroX) / 1.04;
+            velocidadOreroY = 65;
+            oreroVisible = true;
+            mostrarMensaje("¡Señal de lanzamiento! Calcula la caída y pulsa Espacio al acercarte.");
+        }
+    }
+
+    if (oreroVisible) {
+        oreroX += velocidadOreroX * dt;
+        velocidadOreroY += 520 * dt;
+        oreroY += velocidadOreroY * dt;
+        if (oreroY >= Configuracion::sueloY - 16) {
+            perderOrero(jugador, "El florero cayó. ¡Vuelve a intentarlo!");
+        }
+    }
+
+    esperaObjeto -= dt;
+    if (esperaObjeto <= 0) {
+        objetosCaida.append(QPointF(siguienteObjetoX, -35));
+        ++objetosGenerados;
+        const int desplazamiento = ((objetosGenerados * 197 + 480) % 900) - 450;
+        siguienteObjetoX = std::clamp(jugador.obtenerPosicion().x + desplazamiento,
+                                      90.0, anchoMundo - 90);
+        esperaObjeto = 0.68;
+    }
+    for (int i = objetosCaida.size() - 1; i >= 0; --i) {
+        QPointF &objeto = objetosCaida[i];
+        objeto.setY(objeto.y() + 420 * dt);
+        if (objeto.y() > Configuracion::sueloY + 20)
+            objetosCaida.removeAt(i);
+    }
+    letreroX += direccionLetrero * 155 * dt;
+    if (letreroX > 850) { letreroX = 850; direccionLetrero = -1; }
+    if (letreroX < 270) { letreroX = 270; direccionLetrero = 1; }
+
+    const bool cargabaAntes = cargando;
+    const int vidasAntesDeTom = jugador.obtenerVidas();
+    obtenerTom().actualizarIA(dt, jugador);
+    jugador.actualizar(dt);
+    Vector2 posicion = jugador.obtenerPosicion();
+    posicion.x = std::clamp(posicion.x, 28.0, anchoMundo - 28);
+    posicion.y = Configuracion::sueloY;
+    jugador.establecerPosicion(posicion);
+    jugador.establecerVelocidad({jugador.obtenerVelocidad().x, 0});
+    jugador.establecerEnSuelo(true);
+
+    const QRectF cuerpo = jugador.rectanguloColision();
+    const QRectF letrero(letreroX - 62, 485, 124, 30);
+    const bool golpeTom = obtenerTom().rectanguloColision().intersects(cuerpo);
+    bool golpeObjeto = false;
+    for (int i = objetosCaida.size() - 1; i >= 0; --i) {
+        const QPointF &objeto = objetosCaida[i];
+        const QRectF cajaObjeto(objeto.x() - 20, objeto.y() - 20, 40, 40);
+        if (cajaObjeto.intersects(cuerpo)) {
+            golpeObjeto = true;
+            objetosCaida.removeAt(i);
+        }
+    }
+    const bool golpeLetrero = letrero.intersects(cuerpo);
+
+    // Tom puede golpear a Jerry desde su IA antes de que se procese la colisión
+    // del nivel. Retíralo también en ese caso para que no encadene golpes.
+    if (jugador.obtenerVidas() < vidasAntesDeTom) {
+        obtenerTom().retirarse(2.5);
+        if (cargabaAntes)
+            perderOrero(jugador, "Tom te golpeó. El florero volverá en 2 segundos.", false);
+        else
+            mostrarMensaje("¡Tom te golpeó! Aprovecha para alejarte.");
+    }
+
+    if (!jugador.estaHerido() && jugador.obtenerProteccion() <= 0
+        && (golpeTom || golpeObjeto || golpeLetrero)) {
+        const int vidas = jugador.obtenerVidas();
+        jugador.perderVida();
+        if (jugador.obtenerVidas() < vidas) {
+            if (golpeTom)
+                obtenerTom().retirarse(2.5);
+            if (cargabaAntes && golpeTom) {
+                perderOrero(jugador, "Tom te golpeó. El florero volverá en 2 segundos.", false);
+            } else if (golpeTom) {
+                mostrarMensaje("¡Esquiva a Tom!");
+            } else if (golpeObjeto) {
+                mostrarMensaje("¡Esquiva los objetos que caen!");
+            } else {
+                mostrarMensaje("¡Cuidado con el letrero que se mueve!");
+            }
+        }
+    }
+}
+
+bool NivelTienda::verificarVictoria(const Jerry &) const { return turnoEntregado; }
+bool NivelTienda::disponible() const { return true; }
+bool NivelTienda::verificarDerrota(const Jerry &jugador) const
+{
+    return !jugador.estaVivo() || tiempoRestanteNivel <= 0;
+}
+
+void NivelTienda::intentarAtrapar(Jerry &jugador)
+{
+    if (!oreroVisible || cargando || jugador.estaHerido())
+        return;
+    const double diferenciaX = std::abs(jugador.obtenerPosicion().x - oreroX);
+    if (diferenciaX <= 82 && oreroY >= jugador.obtenerPosicion().y - 210
+        && oreroY <= jugador.obtenerPosicion().y - 15) {
+        oreroVisible = false;
+        cargando = true;
+        jugador.establecerFlorero(true);
+        mostrarMensaje("¡Lo atrapaste! Llévalo al mostrador y pulsa E.");
+    }
+}
+
+bool NivelTienda::entregarOrero(Jerry &jugador)
+{
+    if (!cargando || std::abs(jugador.obtenerPosicion().x - puertaX) > 78)
+        return false;
+    cargando = false;
+    turnoEntregado = true;
+    jugador.establecerFlorero(false);
+    mostrarMensaje("¡Florero entregado! El cabildo espera a Jerry.");
+    return true;
+}
+
+void NivelTienda::perderOrero(Jerry &jugador, const QString &motivo, bool perderVida)
+{
+    if (!oreroVisible && !cargando)
+        return;
+    oreroVisible = false;
+    cargando = false;
+    jugador.establecerFlorero(false);
+    if (perderVida && !jugador.estaHerido() && jugador.estaVivo())
+        jugador.perderVida();
+    esperaReinicio = 2;
+    esperaLanzamiento = 0;
+    mostrarMensaje(motivo);
+}
+
+bool NivelTienda::tieneOrero() const { return oreroVisible; }
+bool NivelTienda::estaEnLanzamiento() const { return !oreroVisible && !cargando && esperaReinicio <= 0 && esperaLanzamiento > 0; }
+bool NivelTienda::estaCargando() const { return cargando; }
+double NivelTienda::tiempoRestante() const { return tiempoRestanteNivel; }
+double NivelTienda::posicionOreroX() const { return oreroX; }
+double NivelTienda::posicionOreroY() const { return oreroY; }
+double NivelTienda::posicionAvisoX() const { return avisoX; }
+double NivelTienda::posicionLetreroX() const { return letreroX; }
+const QVector<QPointF> &NivelTienda::obtenerObjetosCaida() const { return objetosCaida; }
+double NivelTienda::posicionSiguienteObjetoX() const { return siguienteObjetoX; }
+double NivelTienda::tiempoParaObjeto() const { return esperaObjeto; }
 
 NivelCabildo::NivelCabildo() : Nivel(3) {}
 void NivelCabildo::cargar() { prepararCarga(); proclamacionActivada = false; }

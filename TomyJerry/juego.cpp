@@ -13,12 +13,29 @@ Juego::Juego() : jugador(std::make_unique<Jerry>())
 }
 
 void Juego::iniciar() { nuevaPartida(); }
-void Juego::reiniciar() { prepararIntento(false); }
+void Juego::reiniciar()
+{
+    if (nivelActual == 1 && inicioNivelTienda) {
+        obtenerNivel().reiniciar();
+        *jugador = *inicioNivelTienda;
+        jugador->establecerPosicion({120, Configuracion::sueloY});
+        jugador->establecerVelocidad({});
+        jugador->establecerDireccion(0);
+        jugador->establecerFlorero(false);
+        jugador->restablecerVidas();
+        estado = EstadoJuego::Jugando;
+        pausado = false;
+        camaraX = 0;
+        return;
+    }
+    prepararIntento(false);
+}
 void Juego::nuevaPartida() { partidaGuardada.reset(); prepararIntento(true); }
 
 void Juego::prepararIntento(bool nuevaPartida)
 {
     nivelActual = 0;
+    inicioNivelTienda.reset();
     *jugador = Jerry();
     obtenerNivel().reiniciar();
     if (nuevaPartida)
@@ -53,6 +70,15 @@ void Juego::cambiarNivel()
     }
     nivelActual = siguiente;
     obtenerNivel().cargar();
+    if (obtenerNivel().obtenerNumero() == 2) {
+        jugador->establecerPosicion({120, Configuracion::sueloY});
+        jugador->establecerVelocidad({});
+        jugador->restablecerVidas();
+        jugador->establecerFlorero(false);
+        jugador->establecerDireccion(0);
+        camaraX = 0;
+        inicioNivelTienda = std::make_unique<Jerry>(*jugador);
+    }
 }
 
 void Juego::pasarNivel()
@@ -65,6 +91,17 @@ void Juego::intentarEntrar()
 {
     if (estado != EstadoJuego::Jugando || jugador->estaHerido())
         return;
+    if (obtenerNivel().obtenerNumero() == 2) {
+        auto &tienda = static_cast<NivelTienda &>(obtenerNivel());
+        if (tienda.verificarVictoria(*jugador)) {
+            pasarNivel();
+        } else if (tienda.entregarOrero(*jugador)) {
+            pasarNivel();
+        } else if (jugador->tieneElFlorero()) {
+            obtenerNivel().mostrarMensaje("Acércate al mostrador, a la derecha, y pulsa E para entregar el florero.");
+        }
+        return;
+    }
     if (obtenerNivel().verificarVictoria(*jugador)) {
         pasarNivel();
         jugador->establecerDireccion(0);
@@ -72,6 +109,16 @@ void Juego::intentarEntrar()
         obtenerNivel().mostrarMensaje(QString("Para entrar necesitas 6 quesos (%1/6) y la llave (%2).")
                                           .arg(jugador->obtenerQuesos()).arg(jugador->tieneLaLlave() ? "sí" : "no"));
     }
+}
+
+void Juego::presionarEspacio()
+{
+    if (estado != EstadoJuego::Jugando)
+        return;
+    if (obtenerNivel().obtenerNumero() == 2)
+        static_cast<NivelTienda &>(obtenerNivel()).intentarAtrapar(*jugador);
+    else
+        jugador->saltar(obtenerNivel().obtenerFisica());
 }
 
 void Juego::pausar()
