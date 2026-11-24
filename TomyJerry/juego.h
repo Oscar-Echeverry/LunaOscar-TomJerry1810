@@ -23,6 +23,7 @@ public:
     void nuevaPartida();
     void pausar();
     void intentarEntrar();
+    void presionarEspacio();
     void establecerDireccion(int direccion);
     void saltar();
     void correr();
@@ -39,6 +40,7 @@ private:
 
     vector<unique_ptr<Nivel>> niveles;
     unique_ptr<Jerry> jugador;
+    unique_ptr<Jerry> inicioNivelTienda;
 
     int nivelActual = 0;
     bool pausado = false;

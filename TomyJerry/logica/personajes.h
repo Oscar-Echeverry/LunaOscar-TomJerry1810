@@ -22,6 +22,7 @@ public:
 
 protected:
     double obtenerVelocidadBase() const;
+    void establecerVidas(int cantidad);
     bool miraDerecha = true;
 
 private:
@@ -42,6 +43,8 @@ public:
     bool puedeSalir() const;
     void recibirDaño(int cantidad) override;
     void perderVida();
+    void activarProteccion(double segundos);
+    void restablecerVidas();
     void activarSaltoMejorado(double segundos);
     void establecerDireccion(int valor);
     void reaparecer(Vector2 punto);
@@ -49,6 +52,10 @@ public:
     void sumarMoneda(int valor);
     void establecerLlave(bool valor);
     void establecerFlorero(bool valor);
+    void establecerAgachado(bool valor);
+    bool estaAgachado() const;
+    void establecerCarreraTienda(bool valor);
+    QRectF rectanguloColision() const override;
     int obtenerQuesos() const;
     int obtenerMonedas() const;
     int obtenerPuntos() const;
@@ -68,6 +75,8 @@ private:
     int direccion = 0;
     bool tieneLlave = false;
     bool tieneFlorero = false;
+    bool agachado = false;
+    bool carreraTienda = false;
     double impulsoSalto = -420;
     double tiempoAgilidad = 0;
     double tiempoRecarga = 0;
