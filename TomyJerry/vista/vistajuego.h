@@ -17,10 +17,12 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 private:
     void dibujarFondo(QPainter &painter);
+    void dibujarEscenaTienda(QPainter &painter);
     void dibujarPlataformas(QPainter &painter);
     void dibujarObjetos(QPainter &painter);
     void dibujarTom(QPainter &painter);
     void dibujarJerry(QPainter &painter);
+    void dibujarFlorero(QPainter &painter, double x, double baseY, double alto);
     void dibujarFigura(QPainter &painter, const QPixmap &imagen, double x, double piesY,
                        double altura, bool derecha = true);
     const Juego *juego = nullptr;

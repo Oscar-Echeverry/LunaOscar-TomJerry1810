@@ -287,7 +287,7 @@ Pulsa E junto a la puerta para completar el recorrido.</string>
    <item>
     <widget class="QLabel" name="controlesInicio">
      <property name="text">
-      <string>← → Caminar · Espacio Saltar · Mantén Mayús Correr · Esc Pausa
+      <string>← → Caminar · Espacio Saltar · Mantén Mayús o pulsa Bloq Mayús para correr · Esc Pausa
 Cada queso mejora la altura del salto durante 5 segundos.
 Tres vidas. Sin límite de tiempo. Tienes 3 segundos de ventaja.</string>
      </property>

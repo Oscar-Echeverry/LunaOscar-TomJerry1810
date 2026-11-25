@@ -78,6 +78,28 @@ void RecursosGraficos::cargarAnimacion(const QString &nombre, int carpeta,
 
 void RecursosGraficos::cargarRecursos()
 {
+    const QStringList nombresFondosTienda = {
+        QStringLiteral("Entrada colonial de tienda bogotana-1.png"),
+        QStringLiteral("Pasillo de telas coloniales-2.png"),
+        QStringLiteral("Exhibicion de ceramica colonial-3.png"),
+        QStringLiteral("Mostrador colonial de la tienda-4.png"),
+        QStringLiteral("Salida trasera al patio colonial-5.png")
+    };
+    fondoTienda = QPixmap(nombresFondosTienda.size() * anchoVista, altoVista);
+    fondoTienda.fill(QColor(45, 33, 25));
+    QPainter panoramaTienda(&fondoTienda);
+    for (int i = 0; i < nombresFondosTienda.size(); ++i) {
+        const QString ruta = ":/Pantallas/Pantallas/Nivel 2/" + nombresFondosTienda[i];
+        const QPixmap panel(ruta);
+        if (panel.isNull()) {
+            recursosFaltantes.append(ruta);
+            qWarning() << "IMAGEN NO ENCONTRADA:" << ruta;
+            continue;
+        }
+        panoramaTienda.drawPixmap(
+            QRect(i * anchoVista, 0, anchoVista, altoVista),
+            panel, panel.rect());
+    }
     const QStringList nombresFondos = {
         QStringLiteral("Balcones coloniales con montanas andinas-1.png"),
         QStringLiteral("Casitas blancas bajo montanas andinas-2.png"),
@@ -128,12 +150,14 @@ void RecursosGraficos::cargarRecursos()
     cargarAnimacion("perro", 5, "perro_caminar", 3);
 
     cargarAnimacion("moneda", 1, "moneda", 3);
+    cargarAnimacion("florero", 7, "florero", 4);
 
     const QStringList nombres = {
         "queso_001",
         "llave_001",
         "caja_001",
-        "barril_001"
+        "barril_001",
+        "tintero"
     };
 
     for (const QString &nombre : nombres) {
@@ -212,6 +236,8 @@ const QPixmap &RecursosGraficos::obtenerFondo() const
 {
     return fondoContinuo;
 }
+
+const QPixmap &RecursosGraficos::obtenerFondoTienda() const { return fondoTienda; }
 
 const QStringList &RecursosGraficos::obtenerErrores() const
 {

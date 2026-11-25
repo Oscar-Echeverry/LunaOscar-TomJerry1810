@@ -5,6 +5,7 @@
 #include "personajes.h"
 #include "temporizador.h"
 #include <QVector>
+#include <QPointF>
 #include <QString>
 #include <memory>
 #include <vector>
@@ -31,7 +32,7 @@ public:
     virtual void actualizar(double dt, Jerry &jugador) = 0;
     virtual bool verificarVictoria(const Jerry &jugador) const = 0;
     virtual bool disponible() const;
-    bool verificarDerrota(const Jerry &jugador) const;
+    virtual bool verificarDerrota(const Jerry &jugador) const;
     bool perderPorColisiones(Jerry &jugador);
     void comprobarColisiones(Jerry &jugador);
     void reiniciar();
@@ -110,11 +111,43 @@ public:
     void actualizar(double dt, Jerry &jugador) override;
     bool verificarVictoria(const Jerry &jugador) const override;
     bool disponible() const override;
+    bool verificarDerrota(const Jerry &jugador) const override;
+    void intentarAtrapar(Jerry &jugador);
+    bool entregarOrero(Jerry &jugador);
+    bool tieneOrero() const;
+    bool estaEnLanzamiento() const;
+    bool estaCargando() const;
+    double tiempoRestante() const;
+    double posicionOreroX() const;
+    double posicionOreroY() const;
+    double posicionAvisoX() const;
+    double posicionLetreroX() const;
+    const QVector<QPointF> &obtenerObjetosCaida() const;
+    double posicionSiguienteObjetoX() const;
+    double tiempoParaObjeto() const;
 
 private:
+    void perderOrero(Jerry &jugador, const QString &motivo, bool perderVida = true);
     unique_ptr<Llorente> llorente;
-    Temporizador temporizador;
-    Vector2 posicionSalida;
+    double tiempoRestanteNivel = 60;
+    double esperaLanzamiento = 1.2;
+    double esperaReinicio = 0;
+    double oreroX = 0;
+    double oreroY = 0;
+    double velocidadOreroX = 0;
+    double velocidadOreroY = 0;
+    double objetivoOreroX = 0;
+    double avisoX = 0;
+    QVector<QPointF> objetosCaida;
+    double siguienteObjetoX = 360;
+    double esperaObjeto = 1.0;
+    double letreroX = 560;
+    int direccionLetrero = 1;
+    int lanzamientos = 0;
+    bool oreroVisible = false;
+    bool cargando = false;
+    bool turnoEntregado = false;
+    int objetosGenerados = 0;
 };
 
 class NivelCabildo : public Nivel
