@@ -1,8 +1,11 @@
 #include "vistajuego.h"
 #include "juego.h"
 #include "logica/configuracion.h"
+#include "logica/niveles.h"
 #include <QPainter>
 #include <QFont>
+#include <QLinearGradient>
+#include <QPainterPath>
 #include <algorithm>
 #include <cmath>
 
@@ -59,6 +62,11 @@ void VistaJuego::dibujarFigura(QPainter &painter, const QPixmap &imagen, double 
 void VistaJuego::dibujarFondo(QPainter &painter)
 {
     const Nivel &nivel = juego->obtenerNivel();
+    if (nivel.obtenerNumero() == 2) {
+        painter.drawPixmap(QRectF(0, 153, recursos.obtenerFondoTienda().width(), 630),
+                           recursos.obtenerFondoTienda(), recursos.obtenerFondoTienda().rect());
+        return;
+    }
     const Jerry &jerry = juego->obtenerJugador();
 
     painter.drawPixmap(0, 0, recursos.obtenerFondo());
@@ -83,6 +91,108 @@ void VistaJuego::dibujarFondo(QPainter &painter)
                              ? "E · Entrar a la tienda"
                              : "Tienda · 6 quesos + llave");
     }
+}
+
+void VistaJuego::dibujarEscenaTienda(QPainter &painter)
+{
+    const auto *tienda = dynamic_cast<const NivelTienda *>(&juego->obtenerNivel());
+    if (!tienda)
+        return;
+    const double tiempo = juego->obtenerNivel().obtenerTiempo();
+    usarFuente(painter, 15);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(24, 38, 49, 225));
+    const QRectF hud(22, 145, 186, 43);
+    painter.drawRoundedRect(hud, 10, 10);
+    painter.setPen(QColor(255, 244, 214));
+    painter.drawText(hud, Qt::AlignCenter, QString("TIEMPO  %1 s").arg(tienda->tiempoRestante(), 0, 'f', 1));
+
+    const double proteccion = juego->obtenerJugador().obtenerProteccion();
+    if (proteccion > 0) {
+        const QRectF escudo(220, 145, 190, 43);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(24, 68, 82, 225));
+        painter.drawRoundedRect(escudo, 10, 10);
+        painter.setPen(QColor(174, 239, 255));
+        usarFuente(painter, 14);
+        painter.drawText(escudo, Qt::AlignCenter,
+                         QString("PROTECCION  %1 s").arg(proteccion, 0, 'f', 1));
+    }
+
+    if (juego->obtenerJugador().tieneElFlorero()) {
+        const double mostradorX = juego->obtenerNivel().obtenerPuertaX();
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(255, 217, 126, 90));
+        painter.drawEllipse(QRectF(mostradorX - 66, Configuracion::sueloY - 9, 132, 18));
+        painter.setBrush(QColor(24, 38, 49, 220));
+        const QRectF etiquetaMostrador(mostradorX - 93, 425, 186, 30);
+        painter.drawRoundedRect(etiquetaMostrador, 8, 8);
+        painter.setPen(QColor(255, 239, 197));
+        usarFuente(painter, 13);
+        painter.drawText(etiquetaMostrador, Qt::AlignCenter, "MOSTRADOR  ·  E");
+    }
+
+    if (!tienda->tieneOrero() && !tienda->estaCargando()) {
+        const double x = tienda->posicionAvisoX();
+        painter.setPen(QPen(QColor(255, 220, 128, 210), 2, Qt::DashLine));
+        painter.drawLine(QPointF(x, 280), QPointF(x, Configuracion::sueloY - 15));
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(255, 217, 126, 215));
+        painter.drawEllipse(QPointF(x, Configuracion::sueloY - 14), 9, 6);
+        painter.setPen(QColor(24, 38, 49));
+        usarFuente(painter, 11);
+        painter.drawText(QRectF(x - 64, 256, 128, 22), Qt::AlignCenter, "¡SEÑAL DE CAÍDA!");
+    }
+
+    painter.setPen(QPen(QColor(75, 35, 14), 3));
+    painter.setBrush(QColor(179, 75, 34));
+    const QRectF letrero(tienda->posicionLetreroX() - 62, 485, 124, 30);
+    painter.drawRoundedRect(letrero, 5, 5);
+    painter.setPen(QColor(255, 239, 197));
+    usarFuente(painter, 13);
+    painter.drawText(letrero, Qt::AlignCenter, "¡CUIDADO!");
+
+    if (tienda->tieneOrero())
+        dibujarFlorero(painter, tienda->posicionOreroX(), tienda->posicionOreroY() + 16, 32);
+    for (const QPointF &objeto : tienda->obtenerObjetosCaida()) {
+        dibujarFigura(painter, recursos.fotograma("tintero", tiempo, 1),
+                      objeto.x(), objeto.y() + 14, 30);
+    }
+    if (tienda->tiempoParaObjeto() <= 0.5) {
+        const double x = tienda->posicionSiguienteObjetoX();
+        painter.setPen(QPen(QColor(255, 220, 128, 210), 2, Qt::DashLine));
+        painter.drawLine(QPointF(x, 300), QPointF(x, Configuracion::sueloY - 15));
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(255, 217, 126, 215));
+        painter.drawEllipse(QPointF(x, Configuracion::sueloY - 14), 8, 5);
+    }
+}
+
+void VistaJuego::dibujarFlorero(QPainter &painter, double x, double baseY, double alto)
+{
+    painter.save();
+    painter.translate(x, baseY);
+    painter.scale(alto / 32.0, alto / 32.0);
+    QPainterPath cuerpo;
+    cuerpo.moveTo(-5, -27);
+    cuerpo.lineTo(5, -27);
+    cuerpo.cubicTo(5, -20, 12, -18, 13, -11);
+    cuerpo.cubicTo(15, -3, 10, 0, 0, 0);
+    cuerpo.cubicTo(-10, 0, -15, -3, -13, -11);
+    cuerpo.cubicTo(-12, -18, -5, -20, -5, -27);
+    cuerpo.closeSubpath();
+    QLinearGradient esmalte(-12, -12, 12, -8);
+    esmalte.setColorAt(0, QColor(105, 44, 25));
+    esmalte.setColorAt(0.5, QColor(190, 91, 43));
+    esmalte.setColorAt(1, QColor(113, 48, 28));
+    painter.setPen(QPen(QColor(74, 34, 24), 1.5));
+    painter.setBrush(esmalte);
+    painter.drawPath(cuerpo);
+    painter.setBrush(QColor(128, 53, 31));
+    painter.drawRoundedRect(QRectF(-6, -30, 12, 5), 2, 2);
+    painter.setPen(QPen(QColor(230, 162, 93), 1.2));
+    painter.drawArc(QRectF(-10, -12, 20, 15), 20 * 16, 130 * 16);
+    painter.restore();
 }
 
 void VistaJuego::dibujarPlataformas(QPainter &painter)
@@ -197,6 +307,9 @@ void VistaJuego::dibujarJerry(QPainter &painter)
                           (2 * impulso) * 4.99, 0.0, 4.99);
 
         cuadros = 1;
+    } else if (jerry.estaAgachado()) {
+        accion = abs(velocidad.x) > 1 ? "jerry_caminar" : "jerry_quieto";
+        altura = 48;
     } else if (abs(velocidad.x) > 1) {
         accion = jerry.obtenerTiempoAgilidad() > 0
                      ? "jerry_correr" : "jerry_caminar";
@@ -218,9 +331,14 @@ void VistaJuego::dibujarJerry(QPainter &painter)
                   posicion.x, min(posicion.y, Configuracion::sueloY),
                   altura, jerry.miraHaciaDerecha());
 
+    if (jerry.tieneElFlorero())
+        dibujarFlorero(painter, posicion.x + (jerry.miraHaciaDerecha() ? 19 : -19),
+                       posicion.y - (jerry.estaAgachado() ? 14 : 24), 25);
+
     painter.setOpacity(1);
 
-    if (jerry.obtenerTiempoSaltoMejorado() > 0 && !jerry.estaHerido()) {
+    if (juego->obtenerNivel().obtenerNumero() != 2
+        && jerry.obtenerTiempoSaltoMejorado() > 0 && !jerry.estaHerido()) {
         painter.setBrush(QColor(24, 38, 49, 215));
 
         painter.drawRoundedRect(QRectF(posicion.x - 46,
@@ -266,9 +384,10 @@ void VistaJuego::paintEvent(QPaintEvent *)
     painter.translate(-juego->obtenerCamaraX(),
                       -Configuracion::inicioVista);
 
-    dibujarFondo(painter);
-
     const Nivel &nivel = juego->obtenerNivel();
+    dibujarFondo(painter);
+    if (nivel.obtenerNumero() == 2)
+        dibujarEscenaTienda(painter);
 
     for (const Habitante &habitante : nivel.obtenerHabitantes()) {
         dibujarFigura(

@@ -34,7 +34,8 @@ void Widget::avanzarTiempo()
     if (juego.obtenerEstado() == EstadoJuego::Jugando) {
         acumulador += transcurrido;
         while (acumulador >= Configuracion::pasoTiempo) {
-            if (teclas.contains(Qt::Key_Shift))
+            if ((teclas.contains(Qt::Key_Shift) || teclas.contains(Qt::Key_CapsLock))
+                && juego.obtenerNivel().obtenerNumero() != 2)
                 juego.correr();
             juego.actualizar(Configuracion::pasoTiempo);
             acumulador -= Configuracion::pasoTiempo;
@@ -54,8 +55,10 @@ void Widget::actualizarInterfaz()
     for (int i = 0; i < 3; ++i)
         corazones += i < jerry.obtenerVidas() ? QStringLiteral("♥ ") : QStringLiteral("♡ ");
     ui->etiquetaVidas->setText("VIDAS: " + corazones.trimmed());
-    ui->etiquetaQuesos->setText(QString("QUESOS: %1 / 6").arg(jerry.obtenerQuesos()));
-    ui->etiquetaLlave->setText(jerry.tieneLaLlave() ? "LLAVE: SÍ" : "LLAVE: NO");
+    const bool nivelTienda = juego.obtenerNivel().obtenerNumero() == 2;
+    ui->etiquetaQuesos->setText(nivelTienda ? (jerry.tieneElFlorero() ? "FLORERO: EN MANOS" : "FLORERO: POR ATRAPAR")
+                                               : QString("QUESOS: %1 / 6").arg(jerry.obtenerQuesos()));
+    ui->etiquetaLlave->setText(nivelTienda ? "ENTREGAR: E" : (jerry.tieneLaLlave() ? "LLAVE: SÍ" : "LLAVE: NO"));
     ui->etiquetaPuntos->setText(QString("PUNTOS: %1").arg(jerry.obtenerPuntos()));
     QString carrera = "DISPONIBLE";
     double carga = 1;
@@ -66,9 +69,21 @@ void Widget::actualizarInterfaz()
         carrera = QString("ESPERA · %1 s").arg(int(std::ceil(jerry.obtenerTiempoRecarga())));
         carga = 1 - jerry.obtenerTiempoRecarga() / 6;
     }
-    ui->etiquetaCarrera->setText("CARRERA: " + carrera);
-    ui->barraCarrera->setValue(int(carga * 1000));
+    if (nivelTienda) {
+        const auto &tienda = static_cast<const NivelTienda &>(juego.obtenerNivel());
+        ui->etiquetaCarrera->setText(QString("TIEMPO: %1 s").arg(tienda.tiempoRestante(), 0, 'f', 1));
+        ui->barraCarrera->setValue(int(tienda.tiempoRestante() / 60.0 * 1000));
+    } else {
+        ui->etiquetaCarrera->setText("CARRERA: " + carrera);
+        ui->barraCarrera->setValue(int(carga * 1000));
+    }
     const Nivel &nivel = juego.obtenerNivel();
+    ui->subtituloJuego->setText(nivelTienda ? "NIVEL 2 · LA TIENDA DE LLORENTE"
+                                             : "NIVEL 1 · LA PLAZA DE SANTAFÉ");
+    ui->etiquetaControles->setText(nivelTienda
+        ? "← → MOVER · ↓ AGACHARSE · ESPACIO ATRAPAR · B PROTECCION 5S · MAYUS CORRER · E ENTREGAR"
+        : "← → CAMINAR     ·     ESPACIO SALTAR     ·     MAYÚS CORRER     ·     E ENTRAR     ·     ESC PAUSA");
+    ui->paginaPausa->establecerNivel(nivel.obtenerNumero());
     const QStringList &errores = ui->vistaJuego->obtenerErroresRecursos();
     ui->etiquetaAviso->setVisible(!errores.isEmpty() || (estado == EstadoJuego::Jugando && nivel.hayMensaje()));
     ui->etiquetaAviso->setText(errores.isEmpty() ? nivel.obtenerMensaje()
@@ -83,7 +98,8 @@ void Widget::actualizarInterfaz()
     } else if (estado == EstadoJuego::Victoria || estado == EstadoJuego::Derrota) {
         ui->panelEstado->setCurrentWidget(ui->paginaResultado);
         ui->paginaResultado->mostrarResultado(estado == EstadoJuego::Victoria,
-                                              jerry.obtenerQuesos(), jerry.obtenerPuntos());
+                                              jerry.obtenerQuesos(), jerry.obtenerPuntos(),
+                                              juego.obtenerNivel().obtenerNumero());
     }
 }
 
@@ -91,6 +107,8 @@ void Widget::limpiarTeclas()
 {
     teclas.clear();
     juego.establecerDireccion(0);
+    juego.obtenerJugador().establecerAgachado(false);
+    juego.obtenerJugador().establecerCarreraTienda(false);
 }
 
 void Widget::iniciarIntento(bool nuevaPartida)
@@ -136,10 +154,20 @@ void Widget::keyPressEvent(QKeyEvent *event)
     } else if (estado == EstadoJuego::Jugando) {
         teclas.insert(tecla);
         juego.establecerDireccion(int(teclas.contains(Qt::Key_Right)) - int(teclas.contains(Qt::Key_Left)));
+        if (tecla == Qt::Key_Down && juego.obtenerNivel().obtenerNumero() == 2)
+            juego.obtenerJugador().establecerAgachado(true);
         if (tecla == Qt::Key_Space)
-            juego.saltar();
-        if (tecla == Qt::Key_Shift)
-            juego.correr();
+            juego.presionarEspacio();
+        if (tecla == Qt::Key_B && juego.obtenerNivel().obtenerNumero() == 2) {
+            juego.obtenerJugador().activarProteccion(5);
+            juego.obtenerNivel().mostrarMensaje("Proteccion activa por 5 segundos.");
+        }
+        if (tecla == Qt::Key_Shift || tecla == Qt::Key_CapsLock) {
+            if (juego.obtenerNivel().obtenerNumero() == 2)
+                juego.obtenerJugador().establecerCarreraTienda(true);
+            else
+                juego.correr();
+        }
         if (tecla == Qt::Key_E)
             juego.intentarEntrar();
     }
@@ -152,6 +180,11 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
     if (!event->isAutoRepeat()) {
         teclas.remove(event->key());
         juego.establecerDireccion(int(teclas.contains(Qt::Key_Right)) - int(teclas.contains(Qt::Key_Left)));
+        if (event->key() == Qt::Key_Down)
+            juego.obtenerJugador().establecerAgachado(false);
+        if ((event->key() == Qt::Key_Shift || event->key() == Qt::Key_CapsLock)
+            && juego.obtenerNivel().obtenerNumero() == 2)
+            juego.obtenerJugador().establecerCarreraTienda(false);
     }
     event->accept();
 }

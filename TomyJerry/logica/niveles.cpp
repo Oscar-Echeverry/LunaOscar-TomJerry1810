@@ -332,10 +332,10 @@ void NivelTienda::actualizar(double dt, Jerry &jugador)
         if (esperaLanzamiento <= 0) {
             ++lanzamientos;
             objetivoOreroX = lanzamientos == 1
-                                 ? 318
-                                 : std::clamp(jugador.obtenerPosicion().x
-                                                  + (lanzamientos % 2 ? 115 : -115),
-                                              120.0, anchoMundo - 120);
+                ? 318
+                : std::clamp(jugador.obtenerPosicion().x
+                                 + (lanzamientos % 2 ? 115 : -115),
+                             120.0, anchoMundo - 120);
             avisoX = objetivoOreroX;
             oreroX = objetivoOreroX - (lanzamientos % 2 ? 145 : -145);
             oreroY = 205;
@@ -361,7 +361,7 @@ void NivelTienda::actualizar(double dt, Jerry &jugador)
         ++objetosGenerados;
         const int desplazamiento = ((objetosGenerados * 197 + 480) % 900) - 450;
         siguienteObjetoX = std::clamp(jugador.obtenerPosicion().x + desplazamiento,
-                                      90.0, anchoMundo - 90);
+                                       90.0, anchoMundo - 90);
         esperaObjeto = 0.68;
     }
     for (int i = objetosCaida.size() - 1; i >= 0; --i) {

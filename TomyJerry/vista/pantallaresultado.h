@@ -10,7 +10,7 @@ class PantallaResultado : public QFrame
 public:
     explicit PantallaResultado(QWidget *parent = nullptr);
     ~PantallaResultado() override;
-    void mostrarResultado(bool victoria, int quesos, int puntos);
+    void mostrarResultado(bool victoria, int quesos, int puntos, int nivel = 1);
 
 signals:
     void repetir();
