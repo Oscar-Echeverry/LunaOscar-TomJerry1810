@@ -1,6 +1,7 @@
 #ifndef VISTAJUEGO_H
 #define VISTAJUEGO_H
 #include <QWidget>
+#include <QElapsedTimer>
 #include "recursosgraficos.h"
 
 class Juego;
@@ -30,5 +31,6 @@ private:
                        double altura, bool derecha = true);
     const Juego *juego = nullptr;
     RecursosGraficos recursos;
+    QElapsedTimer relojIntro;
 };
 #endif

@@ -1,6 +1,7 @@
 #ifndef IA_H
 #define IA_H
 #include "../logica/vector2.h"
+#include "../logica/dificultad.h"
 #include <array>
 
 using namespace std;
@@ -26,10 +27,10 @@ public:
     void registrarVisita(int zona);
     int zonaMasFrecuente() const;
     void reiniciar();
-    const array<int, 4> &obtenerVisitas() const;
+    const array<int, 6> &obtenerVisitas() const;
 
 private:
-    array<int, 4> visitasPorZona{};
+    array<int, 6> visitasPorZona{};
 };
 
 class PercepcionTom
@@ -45,7 +46,8 @@ private:
 class RazonamientoTom
 {
 public:
-    TipoDecision decidir(const Observacion &observacion, const AprendizajeTom &memoria) const;
+    TipoDecision decidir(const Observacion &observacion, const AprendizajeTom &memoria,
+                         Dificultad dificultad = Dificultad::Normal) const;
 
 private:
     double distanciaAtaque = 32;
@@ -70,6 +72,7 @@ class AgenteTom
 {
 public:
     void actualizar(Tom &tom, Jerry &jugador, double dt);
+    bool observarYDecidir(const Observacion &observacion, Dificultad dificultad, double dt);
     void registrarNuevaZona(const Observacion &observacion);
     void establecerNivel(const Nivel *nivel);
     void reiniciar(bool nuevaPartida);

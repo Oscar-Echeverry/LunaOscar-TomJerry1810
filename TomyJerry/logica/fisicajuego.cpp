@@ -10,10 +10,12 @@ FisicaJuego::FisicaJuego(double gravedad, double coeficienteFriccion)
 {
 }
 
-void FisicaJuego::aplicarParabola(Entidad &entidad, double dt) const
+void FisicaJuego::aplicarParabola(Entidad &entidad, double dt, bool moverHorizontal) const
 {
     Vector2 posicion = entidad.obtenerPosicion();
     const Vector2 velocidad = entidad.obtenerVelocidad();
+    if (moverHorizontal)
+        posicion.x += velocidad.x * dt;
     posicion.y += velocidad.y * dt + 0.5 * gravedad * dt * dt;
     entidad.establecerPosicion(posicion);
     aplicarGravedad(entidad, dt);

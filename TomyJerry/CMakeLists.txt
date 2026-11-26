@@ -72,6 +72,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(TomyJerry
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        vista/pantallaportada.h
+        vista/pantallaportada.cpp
+
     )
 else()
     if(ANDROID)

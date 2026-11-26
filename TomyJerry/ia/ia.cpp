@@ -25,7 +25,7 @@ void AprendizajeTom::reiniciar()
     visitasPorZona.fill(0);
 }
 
-const array<int, 4> &AprendizajeTom::obtenerVisitas() const
+const array<int, 6> &AprendizajeTom::obtenerVisitas() const
 {
     return visitasPorZona;
 }
@@ -34,6 +34,19 @@ Observacion PercepcionTom::percibir(const Tom &tom, const Jerry &jugador) const
 {
     Observacion resultado;
     const Vector2 posicionTom = tom.obtenerPosicion();
+
+    if (const auto *cabildo = dynamic_cast<const NivelCabildo *>(nivel)) {
+        resultado.distancia = posicionTom.distancia(jugador.obtenerPosicion());
+        resultado.visible = jugador.estaVivo()
+                            && resultado.distancia < configuracionTom(tom.obtenerDificultad()).radioVision
+                            && cabildo->hayLineaVision(posicionTom, jugador.obtenerPosicion());
+        if (resultado.visible) {
+            resultado.posicionJerry = jugador.obtenerPosicion();
+            resultado.velocidadJerry = jugador.obtenerVelocidad();
+            resultado.zonaJerry = cabildo->zonaEnPlaza(resultado.posicionJerry);
+        }
+        return resultado;
+    }
 
     resultado.distancia = abs(jugador.obtenerPosicion().x - posicionTom.x);
     resultado.visible = resultado.distancia < configuracionTom(tom.obtenerDificultad()).visionCalle
@@ -54,7 +67,7 @@ Observacion PercepcionTom::percibir(const Tom &tom, const Jerry &jugador) const
         resultado.posicionJerry = jugador.obtenerPosicion();
         resultado.velocidadJerry = jugador.obtenerVelocidad();
         const double ancho = nivel ? nivel->obtenerAncho() : Configuracion::anchoMundo;
-        resultado.zonaJerry = clamp(int(resultado.posicionJerry.x * 4 / ancho), 0, 3);
+        resultado.zonaJerry = clamp(int(resultado.posicionJerry.x * 6 / ancho), 0, 5);
     }
 
     return resultado;
@@ -65,10 +78,17 @@ void PercepcionTom::establecerNivel(const Nivel *valor)
     nivel = valor;
 }
 
-TipoDecision RazonamientoTom::decidir(const Observacion &observacion, const AprendizajeTom &memoria) const
+TipoDecision RazonamientoTom::decidir(const Observacion &observacion, const AprendizajeTom &memoria,
+                                      Dificultad dificultad) const
 {
-    if (observacion.visible)
-        return observacion.distancia < distanciaAtaque ? TipoDecision::ATACAR : TipoDecision::PERSEGUIR;
+    if (observacion.visible) {
+        if (observacion.distancia < distanciaAtaque)
+            return TipoDecision::ATACAR;
+        if (dificultad == Dificultad::Dificil
+            && hypot(observacion.velocidadJerry.x, observacion.velocidadJerry.y) > 1)
+            return TipoDecision::INTERCEPTAR;
+        return TipoDecision::PERSEGUIR;
+    }
 
     return memoria.zonaMasFrecuente() >= 0 ? TipoDecision::INTERCEPTAR : TipoDecision::PATRULLAR;
 }
@@ -101,6 +121,12 @@ void AccionTom::ejecutar(TipoDecision decision, const Observacion &observacion,
         break;
 
     case TipoDecision::INTERCEPTAR:
+        if (observacion.visible) {
+            tom.perseguir({observacion.posicionJerry.x + observacion.velocidadJerry.x
+                                                             * configuracionTom(tom.obtenerDificultad()).anticipacion,
+                           observacion.posicionJerry.y}, dt);
+            break;
+        }
         if (tiempoBusqueda > 0) {
             tiempoBusqueda = max(0.0, tiempoBusqueda - dt);
 
@@ -143,13 +169,7 @@ void AccionTom::reiniciar()
 void AgenteTom::actualizar(Tom &tom, Jerry &jugador, double dt)
 {
     const Observacion observacion = percepcion.percibir(tom, jugador);
-    registrarNuevaZona(observacion);
-
-    esperaDecision -= dt;
-    if (esperaDecision <= 0) {
-        decision = razonamiento.decidir(observacion, aprendizaje);
-        esperaDecision = configuracionTom(tom.obtenerDificultad()).intervaloDecision;
-    }
+    observarYDecidir(observacion, tom.obtenerDificultad(), dt);
 
     accion.ejecutar(decision, observacion, aprendizaje.zonaMasFrecuente(), tom, dt);
     accion.ejecutarAtaque(tom, jugador);
@@ -161,6 +181,17 @@ void AgenteTom::registrarNuevaZona(const Observacion &observacion)
         aprendizaje.registrarVisita(observacion.zonaJerry);
         ultimaZonaVisible = observacion.zonaJerry;
     }
+}
+
+bool AgenteTom::observarYDecidir(const Observacion &observacion, Dificultad dificultad, double dt)
+{
+    registrarNuevaZona(observacion);
+    esperaDecision -= dt;
+    if (esperaDecision > 0.000001)
+        return false;
+    decision = razonamiento.decidir(observacion, aprendizaje, dificultad);
+    esperaDecision = configuracionTom(dificultad).intervaloDecision;
+    return true;
 }
 
 void AgenteTom::establecerNivel(const Nivel *nivel)

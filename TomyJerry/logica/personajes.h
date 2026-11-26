@@ -102,6 +102,8 @@ public:
     void retirarse(double segundos);
     bool estaRetirandose() const;
     const AgenteTom &obtenerAgente() const;
+    bool observarYDecidir(const Observacion &observacion, double dt);
+    void reiniciarObservacion();
     void establecerDificultad(Dificultad valor);
     Dificultad obtenerDificultad() const;
 private:

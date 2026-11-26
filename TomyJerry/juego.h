@@ -8,16 +8,20 @@
 
 using namespace std;
 
-enum class EstadoJuego { Presentacion, Jugando, Pausa, Derrota, Victoria };
+enum class EstadoJuego { Portada, Presentacion, SeleccionDificultad, Jugando, Invitacion, Pausa, Derrota, Victoria };
 
 class Juego
 {
 public:
     Juego();
     void iniciar();
+    void mostrarSeleccionNivel();
+    void volverAPortada();
+    void iniciarNivel(int numero);
     void actualizar(double dt);
     void cambiarNivel();
     void pasarNivel();
+    void continuarAlCabildo();
     void guardar();
     void cargar();
     void reiniciar();
@@ -50,7 +54,7 @@ private:
 
     int nivelActual = 0;
     bool pausado = false;
-    EstadoJuego estado = EstadoJuego::Presentacion;
+    EstadoJuego estado = EstadoJuego::Portada;
     double camaraX = 0;
     vector<EventoSonido> sonidosPendientes;
 
