@@ -6,6 +6,8 @@
 #include <QElapsedTimer>
 #include <QSet>
 #include "juego.h"
+#include "sonido/sonidos.h"
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -29,8 +31,13 @@ private:
     void iniciarIntento(bool nuevaPartida);
     void cambiarPausa();
     void limpiarTeclas();
-    Ui::Widget *ui;
+    void cambiarDificultad(Dificultad valor);
+    void cambiarSonido(bool activo);
+    void mostrarError(const std::exception &error);
+    std::unique_ptr<Ui::Widget> ui;
     Juego juego;
+    Sonidos sonidos;
+    QString errorAudio;
     QTimer temporizador;
     QElapsedTimer reloj;
     QSet<int> teclas;

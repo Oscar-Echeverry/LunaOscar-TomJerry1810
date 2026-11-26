@@ -2,6 +2,7 @@
 #define JUEGO_H
 #include "logica/personajes.h"
 #include "logica/niveles.h"
+#include "logica/eventosonido.h"
 #include <memory>
 #include <vector>
 
@@ -24,7 +25,8 @@ public:
     void pausar();
     void intentarEntrar();
     void presionarEspacio();
-    void establecerDireccion(int direccion);
+    void activarBurbuja();
+    void establecerDireccion(int direccion, int vertical = 0);
     void saltar();
     void correr();
     EstadoJuego obtenerEstado() const;
@@ -33,6 +35,9 @@ public:
     Nivel &obtenerNivel();
     const Nivel &obtenerNivel() const;
     double obtenerCamaraX() const;
+    void establecerDificultad(Dificultad valor);
+    Dificultad obtenerDificultad() const;
+    vector<EventoSonido> consumirSonidos();
 
 private:
     void prepararIntento(bool nuevaPartida);
@@ -41,11 +46,13 @@ private:
     vector<unique_ptr<Nivel>> niveles;
     unique_ptr<Jerry> jugador;
     unique_ptr<Jerry> inicioNivelTienda;
+    unique_ptr<Jerry> inicioNivelCabildo;
 
     int nivelActual = 0;
     bool pausado = false;
     EstadoJuego estado = EstadoJuego::Presentacion;
     double camaraX = 0;
+    vector<EventoSonido> sonidosPendientes;
 
     struct PartidaGuardada {
         Jerry jugador;

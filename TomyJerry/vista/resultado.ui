@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Resultado del Nivel 1</string>
+   <string>Resultado del juego</string>
   </property>
   <property name="palette">
    <palette>
@@ -78,6 +78,7 @@ QPushButton[secundario="true"] { background-color: #304a56; color: #fff4d6; }
 QPushButton[secundario="true"]:hover { background-color: #405e6b; }
 QFrame#paginaResultado { background-color: #182631; border: 1px solid #f1ba4c; border-radius: 18px; }
 QLabel#tituloResultado { font-size: 28px; font-weight: 700; } QLabel#firmaResultado { color: #f1ba4c; font-size: 12px; font-weight: 700; } QLabel#detalleResultado { font-size: 16px; } QLabel#puntosResultado { color: #f1ba4c; font-size: 23px; font-weight: 700; }
+QLabel#creditosResultado { color: #f1ba4c; font-size: 17px; }
 </string>
   </property>
   <layout class="QVBoxLayout" name="layoutResultado">
@@ -131,6 +132,16 @@ y llegó a la tienda de Llorente.</string>
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="creditosResultado">
+     <property name="text">
+      <string>&lt;b&gt;Creado por Luna y Oscar&lt;/b&gt;&lt;br/&gt;Para el Desafío de Informática 2 · 2026</string>
+     </property>
+     <property name="textFormat"><enum>Qt::RichText</enum></property>
+     <property name="alignment"><set>Qt::AlignCenter</set></property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="puntosResultado">
      <property name="text">
       <string>PUNTOS: 0</string>
@@ -156,8 +167,10 @@ y llegó a la tienda de Llorente.</string>
      </property>
     </widget>
    </item>
-   <item alignment="Qt::AlignHCenter">
-    <widget class="QPushButton" name="botonNuevaPartidaResultado">
+   <item>
+    <layout class="QHBoxLayout" name="accionesResultado">
+     <item>
+      <widget class="QPushButton" name="botonNuevaPartidaResultado">
      <property name="focusPolicy">
       <enum>Qt::NoFocus</enum>
      </property>
@@ -167,7 +180,15 @@ y llegó a la tienda de Llorente.</string>
      <property name="secundario" stdset="0">
       <bool>true</bool>
      </property>
-    </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="botonSalirResultado">
+       <property name="focusPolicy"><enum>Qt::NoFocus</enum></property>
+       <property name="text"><string>Salir · Esc</string></property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

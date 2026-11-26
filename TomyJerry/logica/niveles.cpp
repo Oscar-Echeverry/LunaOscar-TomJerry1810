@@ -7,11 +7,19 @@
 Nivel::Nivel(int numero) : numero(numero), tom(std::make_unique<Tom>())
 {
     tom->establecerNivel(this);
+    tom->establecerDificultad(dificultad);
 }
 
 bool Nivel::disponible() const { return true; }
 void Nivel::reiniciar() { cargar(); }
 void Nivel::reiniciarMemoria() { tom->reiniciar(true); }
+void Nivel::establecerDificultad(Dificultad valor)
+{
+    configuracionTom(valor);
+    dificultad = valor;
+    tom->establecerDificultad(valor);
+}
+Dificultad Nivel::obtenerDificultad() const { return dificultad; }
 
 bool Nivel::verificarDerrota(const Jerry &jugador) const
 {
@@ -170,7 +178,7 @@ void NivelCalles::cargar()
     prepararCarga();
     tiempo = 0;
     puntoSeguroX = 180;
-    configurarDificultad();
+    configurarDificultad(int(dificultad));
     plataformas = {QRectF(975, sueloY - 64, 187, 64), QRectF(2670, sueloY - 64, 187, 64),
                    QRectF(4110, sueloY - 64, 187, 64)};
     const QVector<double> centros = {690, 1590, 2330, 3220, 3910, 4490};
@@ -200,15 +208,21 @@ void NivelCalles::cargar()
     mostrarMensaje("¡Toma ventaja! Mantén Mayús o pulsa Bloq Mayús para correr. Reúne los 6 quesos y la llave.");
 }
 
-void NivelCalles::configurarDificultad(int dificultad)
+void NivelCalles::configurarDificultad(int seleccion)
 {
-    if (dificultad != 1)
-        return;
+    Nivel::establecerDificultad(Dificultad(seleccion));
     metaQuesos = 6;
-    amplitud = 60;
-    frecuencia = 0.5;
+    amplitud = 60 * factorPeligros(dificultad);
+    frecuencia = 0.5 * factorPeligros(dificultad);
+    for (const auto &obstaculo : obtenerObstaculos())
+        obstaculo->configurarOscilacion(amplitud, frecuencia);
     anchoMundo = Configuracion::anchoMundo;
     puertaX = posicionSalida = Configuracion::puertaX;
+}
+
+void NivelCalles::establecerDificultad(Dificultad valor)
+{
+    configurarDificultad(int(valor));
 }
 
 void NivelCalles::actualizar(double dt, Jerry &jugador)
@@ -286,7 +300,7 @@ bool NivelCalles::verificarVictoria(const Jerry &jugador) const
 
 NivelTienda::NivelTienda() : Nivel(2), llorente(std::make_unique<Llorente>())
 {
-    anchoMundo = Configuracion::anchoVista * 5;
+    anchoMundo = Configuracion::anchoVista * 4;
     puertaX = Configuracion::anchoVista * 3 + 490;
 }
 
@@ -314,7 +328,7 @@ void NivelTienda::cargar()
     puntosSeguros.clear();
     obtenerTom().reiniciar(false);
     obtenerTom().establecerPosicion({40, Configuracion::sueloY});
-    obtenerTom().retirarse(3.5);
+    obtenerTom().retirarse(configuracionTom(dificultad).ventajaInicial);
     mostrarMensaje("¡El florero salió volando! Espacio para atraparlo; llévalo al mostrador y pulsa E.");
 }
 
@@ -332,10 +346,10 @@ void NivelTienda::actualizar(double dt, Jerry &jugador)
         if (esperaLanzamiento <= 0) {
             ++lanzamientos;
             objetivoOreroX = lanzamientos == 1
-                ? 318
-                : std::clamp(jugador.obtenerPosicion().x
-                                 + (lanzamientos % 2 ? 115 : -115),
-                             120.0, anchoMundo - 120);
+                                 ? 318
+                                 : std::clamp(jugador.obtenerPosicion().x
+                                                  + (lanzamientos % 2 ? 115 : -115),
+                                              120.0, anchoMundo - 120);
             avisoX = objetivoOreroX;
             oreroX = objetivoOreroX - (lanzamientos % 2 ? 145 : -145);
             oreroY = 205;
@@ -361,16 +375,16 @@ void NivelTienda::actualizar(double dt, Jerry &jugador)
         ++objetosGenerados;
         const int desplazamiento = ((objetosGenerados * 197 + 480) % 900) - 450;
         siguienteObjetoX = std::clamp(jugador.obtenerPosicion().x + desplazamiento,
-                                       90.0, anchoMundo - 90);
-        esperaObjeto = 0.68;
+                                      90.0, anchoMundo - 90);
+        esperaObjeto = 0.68 / factorPeligros(dificultad);
     }
     for (int i = objetosCaida.size() - 1; i >= 0; --i) {
         QPointF &objeto = objetosCaida[i];
-        objeto.setY(objeto.y() + 420 * dt);
+        objeto.setY(objeto.y() + 420 * factorPeligros(dificultad) * dt);
         if (objeto.y() > Configuracion::sueloY + 20)
             objetosCaida.removeAt(i);
     }
-    letreroX += direccionLetrero * 155 * dt;
+    letreroX += direccionLetrero * 155 * factorPeligros(dificultad) * dt;
     if (letreroX > 850) { letreroX = 850; direccionLetrero = -1; }
     if (letreroX < 270) { letreroX = 270; direccionLetrero = 1; }
 
@@ -452,12 +466,16 @@ void NivelTienda::intentarAtrapar(Jerry &jugador)
 
 bool NivelTienda::entregarOrero(Jerry &jugador)
 {
-    if (!cargando || std::abs(jugador.obtenerPosicion().x - puertaX) > 78)
+    if (turnoEntregado || !cargando || !jugador.tieneElFlorero()
+        || !jugador.estaVivo() || jugador.estaHerido() || tiempoRestanteNivel <= 0
+        || std::abs(jugador.obtenerPosicion().x - puertaX) > 78)
         return false;
+    jugador.sumarPuntos(puntosEntregaFlorero);
     cargando = false;
     turnoEntregado = true;
     jugador.establecerFlorero(false);
-    mostrarMensaje("¡Florero entregado! El cabildo espera a Jerry.");
+    mostrarMensaje(QString("¡Florero entregado! +%1 puntos. El cabildo espera a Jerry.")
+                       .arg(puntosEntregaFlorero));
     return true;
 }
 
@@ -486,16 +504,3 @@ double NivelTienda::posicionLetreroX() const { return letreroX; }
 const QVector<QPointF> &NivelTienda::obtenerObjetosCaida() const { return objetosCaida; }
 double NivelTienda::posicionSiguienteObjetoX() const { return siguienteObjetoX; }
 double NivelTienda::tiempoParaObjeto() const { return esperaObjeto; }
-
-NivelCabildo::NivelCabildo() : Nivel(3) {}
-void NivelCabildo::cargar() { prepararCarga(); proclamacionActivada = false; }
-void NivelCabildo::actualizar(double, Jerry &) {}
-bool NivelCabildo::verificarVictoria(const Jerry &) const { return false; }
-bool NivelCabildo::disponible() const { return false; }
-
-void NivelCabildo::activarProclamacion(const Jerry &jugador)
-{
-    if (jugador.estaVivo() && !jugador.estaHerido() && jugador.tieneElFlorero()
-        && jugador.obtenerPosicion().distancia(posicionCabildo) <= 100)
-        proclamacionActivada = true;
-}
