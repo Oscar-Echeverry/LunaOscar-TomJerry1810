@@ -308,4 +308,15 @@
         <file>Sprites/7/saltar_003.png</file>
         <file>Sprites/7/saltar_004.png</file>
     </qresource>
+    <qresource prefix="/audios">
+        <file>sonido/audio/avanzar.wav</file>
+        <file>sonido/audio/dano.wav</file>
+        <file>sonido/audio/empujar.wav</file>
+        <file>sonido/audio/fondo.wav</file>
+        <file>sonido/audio/moneda.wav</file>
+        <file>sonido/audio/queso.wav</file>
+        <file>sonido/audio/recoger.wav</file>
+        <file>sonido/audio/salto.wav</file>
+        <file>sonido/audio/victoria.wav</file>
+    </qresource>
 </RCC>

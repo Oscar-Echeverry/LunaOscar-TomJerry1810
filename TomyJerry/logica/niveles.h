@@ -3,7 +3,7 @@
 #include "fisicajuego.h"
 #include "objetos.h"
 #include "personajes.h"
-#include "temporizador.h"
+#include "dificultad.h"
 #include <QVector>
 #include <QPointF>
 #include <QString>
@@ -56,6 +56,8 @@ public:
     bool estaCompletado() const;
     void completar();
     void restaurarEscenario(double tiempo, double puntoSeguro, const vector<bool> &activos);
+    virtual void establecerDificultad(Dificultad valor);
+    Dificultad obtenerDificultad() const;
 
 protected:
     void prepararCarga();
@@ -74,6 +76,7 @@ protected:
     double piesAnteriores = 568;
     double tiempoMensaje = 0;
     QString mensaje;
+    Dificultad dificultad = Dificultad::Normal;
 
 private:
     int numero;
@@ -92,6 +95,7 @@ public:
     void actualizar(double dt, Jerry &jugador) override;
     bool verificarVictoria(const Jerry &jugador) const override;
     void configurarDificultad(int dificultad = 1);
+    void establecerDificultad(Dificultad valor) override;
 
 private:
     void recogerObjetos(Jerry &jugador);
@@ -106,6 +110,7 @@ private:
 class NivelTienda : public Nivel
 {
 public:
+    static constexpr int puntosEntregaFlorero = 500;
     NivelTienda();
     void cargar() override;
     void actualizar(double dt, Jerry &jugador) override;
@@ -153,16 +158,78 @@ private:
 class NivelCabildo : public Nivel
 {
 public:
+    struct CajaDeslizable {
+        QRectF rectangulo;
+        Vector2 velocidad;
+    };
+    struct ElementoPlaza {
+        QRectF imagen;
+        double profundidad;
+    };
+
     NivelCabildo();
     void cargar() override;
     void actualizar(double dt, Jerry &jugador) override;
     bool verificarVictoria(const Jerry &jugador) const override;
-    void activarProclamacion(const Jerry &jugador);
     bool disponible() const override;
+    void establecerDireccion(int horizontal, int vertical);
+    bool interactuar(Jerry &jugador);
+    const QVector<CajaDeslizable> &obtenerCajas() const;
+    const QVector<QRectF> &obtenerPuestos() const;
+    const QVector<ElementoPlaza> &obtenerEscenografia() const;
+    const QVector<Vector2> &obtenerRastroJerry() const;
+    const QVector<Vector2> &obtenerRutaCorta() const;
+    const QVector<Vector2> &obtenerRutaAlternativa() const;
+    Vector2 obtenerCabildo() const;
+    Vector2 obtenerInicio() const;
+    QRectF obtenerLimitesPlaza() const;
+    int obtenerPantalla() const;
+    bool tomEstaAturdido() const;
+    void establecerDificultad(Dificultad valor) override;
+    const QVector<QRectF> &obtenerVallas() const;
+    int obtenerEmpujes() const;
+    static QString nombreFondo(int pantalla);
+    static QString nombrePlaza(int pantalla);
 
 private:
+    bool posicionLibre(const QRectF &cuerpo, int ignorarCaja = -1) const;
+    void actualizarCajas(double dt, Jerry &jugador);
+    void actualizarTom(double dt, Jerry &jugador);
+    bool empujarCaja(Jerry &jugador);
+    void cargarPlaza();
+    void colocarCajaEnCamino();
+    void actualizarRutas(Vector2 inicio);
+    QVector<Vector2> buscarCamino(Vector2 inicio, Vector2 destino,
+                                  double semiancho = 12, double alto = 12,
+                                  bool evitarVigilancia = false, int ignorarCaja = -1) const;
+
     Vector2 posicionCabildo;
-    bool proclamacionActivada = false;
+    Vector2 posicionInicio;
+    QRectF limitesPlaza;
+    int pantallaActual = 0;
+    QVector<QRectF> puestos;
+    QVector<QRectF> vallas;
+    QVector<ElementoPlaza> escenografia;
+    QVector<CajaDeslizable> cajas;
+    QVector<Vector2> rastroJerry;
+    QVector<Vector2> rutaCorta;
+    QVector<Vector2> rutaAlternativa;
+    Vector2 posicionVigilancia;
+    int direccionX = 0;
+    int direccionY = 0;
+    int mirandoX = 0;
+    int mirandoY = -1;
+    int indiceRastroTom = 0;
+    double tiempoTomAturdido = 0;
+    double tiempoDañoHabitante = 0;
+    bool mensajeEntregado = false;
+    QVector<Vector2> caminoTom;
+    double esperaCaminoTom = 0;
+    double esperaRastro = 0;
+    int cajaDelPaso = -1;
+    int empujes = 0;
+    bool pasoAbierto = false;
+    double tiempoSinVerJerry = 0;
 };
 
 #endif

@@ -76,6 +76,7 @@ public:
     const Vector2 &obtenerCentro() const;
     double obtenerAmplitud() const;
     void establecerTiempo(double valor);
+    void configurarOscilacion(double nuevaAmplitud, double nuevaFrecuencia);
 
 private:
     TipoMovimiento tipoMovimiento;

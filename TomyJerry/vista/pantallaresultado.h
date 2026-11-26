@@ -15,6 +15,7 @@ public:
 signals:
     void repetir();
     void nuevaPartida();
+    void salir();
 
 private:
     Ui::PantallaResultado *ui;

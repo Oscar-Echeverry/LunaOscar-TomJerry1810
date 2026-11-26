@@ -14,6 +14,7 @@ struct Observacion {
     bool visible = false;
     double distancia = 0;
     Vector2 posicionJerry;
+    Vector2 velocidadJerry;
     int zonaJerry = -1;
 };
 
@@ -38,7 +39,6 @@ public:
     void establecerNivel(const Nivel *valor);
 
 private:
-    double radioVision = 1120;
     const Nivel *nivel = nullptr;
 };
 
@@ -83,5 +83,6 @@ private:
     AprendizajeTom aprendizaje;
     int ultimaZonaVisible = -1;
     TipoDecision decision = TipoDecision::PATRULLAR;
+    double esperaDecision = 0;
 };
 #endif

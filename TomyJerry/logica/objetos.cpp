@@ -77,3 +77,8 @@ void Obstaculo::aplicardaño(Personaje &personaje)
 const Vector2 &Obstaculo::obtenerCentro() const { return centro; }
 double Obstaculo::obtenerAmplitud() const { return amplitud; }
 void Obstaculo::establecerTiempo(double valor) { tiempo = valor; }
+void Obstaculo::configurarOscilacion(double nuevaAmplitud, double nuevaFrecuencia)
+{
+    amplitud = nuevaAmplitud;
+    frecuencia = nuevaFrecuencia;
+}

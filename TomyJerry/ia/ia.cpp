@@ -36,7 +36,8 @@ Observacion PercepcionTom::percibir(const Tom &tom, const Jerry &jugador) const
     const Vector2 posicionTom = tom.obtenerPosicion();
 
     resultado.distancia = abs(jugador.obtenerPosicion().x - posicionTom.x);
-    resultado.visible = resultado.distancia < radioVision && !jugador.estaHerido() && jugador.estaVivo();
+    resultado.visible = resultado.distancia < configuracionTom(tom.obtenerDificultad()).visionCalle
+                        && !jugador.estaHerido() && jugador.estaVivo();
 
     if (nivel) {
         for (const QRectF &caja : nivel->obtenerPlataformas()) {
@@ -51,6 +52,7 @@ Observacion PercepcionTom::percibir(const Tom &tom, const Jerry &jugador) const
 
     if (resultado.visible) {
         resultado.posicionJerry = jugador.obtenerPosicion();
+        resultado.velocidadJerry = jugador.obtenerVelocidad();
         const double ancho = nivel ? nivel->obtenerAncho() : Configuracion::anchoMundo;
         resultado.zonaJerry = clamp(int(resultado.posicionJerry.x * 4 / ancho), 0, 3);
     }
@@ -84,14 +86,18 @@ void AccionTom::ejecutar(TipoDecision decision, const Observacion &observacion,
 
     if (observacion.visible) {
         ultimaPosicionVista = observacion.posicionJerry.x;
-        tiempoBusqueda = 8;
+        tiempoBusqueda = configuracionTom(tom.obtenerDificultad()).tiempoBusqueda;
     }
 
     switch (decision) {
     case TipoDecision::PERSEGUIR:
     case TipoDecision::ATACAR:
-        if (observacion.visible)
-            tom.perseguir(observacion.posicionJerry, dt);
+        if (observacion.visible) {
+            Vector2 objetivo = observacion.posicionJerry;
+            objetivo.x += observacion.velocidadJerry.x
+                          * configuracionTom(tom.obtenerDificultad()).anticipacion;
+            tom.perseguir(objetivo, dt);
+        }
         break;
 
     case TipoDecision::INTERCEPTAR:
@@ -139,7 +145,11 @@ void AgenteTom::actualizar(Tom &tom, Jerry &jugador, double dt)
     const Observacion observacion = percepcion.percibir(tom, jugador);
     registrarNuevaZona(observacion);
 
-    decision = razonamiento.decidir(observacion, aprendizaje);
+    esperaDecision -= dt;
+    if (esperaDecision <= 0) {
+        decision = razonamiento.decidir(observacion, aprendizaje);
+        esperaDecision = configuracionTom(tom.obtenerDificultad()).intervaloDecision;
+    }
 
     accion.ejecutar(decision, observacion, aprendizaje.zonaMasFrecuente(), tom, dt);
     accion.ejecutarAtaque(tom, jugador);
@@ -166,6 +176,7 @@ void AgenteTom::reiniciar(bool nuevaPartida)
 
     ultimaZonaVisible = -1;
     decision = TipoDecision::PATRULLAR;
+    esperaDecision = 0;
     accion.reiniciar();
 }
 
