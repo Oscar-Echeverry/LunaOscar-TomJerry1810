@@ -2,6 +2,7 @@
 #define PERSONAJES_H
 #include "entidad.h"
 #include "../ia/ia.h"
+#include "dificultad.h"
 
 class FisicaJuego;
 class Objeto;
@@ -44,12 +45,14 @@ public:
     void recibirDaño(int cantidad) override;
     void perderVida();
     void activarProteccion(double segundos);
+    void desactivarProteccion();
     void restablecerVidas();
     void activarSaltoMejorado(double segundos);
     void establecerDireccion(int valor);
     void reaparecer(Vector2 punto);
     void sumarQueso(int cantidad);
     void sumarMoneda(int valor);
+    void sumarPuntos(int cantidad);
     void establecerLlave(bool valor);
     void establecerFlorero(bool valor);
     void establecerAgachado(bool valor);
@@ -62,7 +65,6 @@ public:
     bool tieneLaLlave() const;
     bool tieneElFlorero() const;
     double obtenerTiempoAgilidad() const;
-    double obtenerTiempoRecarga() const;
     double obtenerTiempoSaltoMejorado() const;
     double obtenerProteccion() const;
     double obtenerTiempoHerida() const;
@@ -79,7 +81,6 @@ private:
     bool carreraTienda = false;
     double impulsoSalto = -420;
     double tiempoAgilidad = 0;
-    double tiempoRecarga = 0;
     double tiempoSaltoMejorado = 0;
     double proteccion = 0;
     double tiempoHerida = 0;
@@ -101,6 +102,8 @@ public:
     void retirarse(double segundos);
     bool estaRetirandose() const;
     const AgenteTom &obtenerAgente() const;
+    void establecerDificultad(Dificultad valor);
+    Dificultad obtenerDificultad() const;
 private:
     double velocidadPersecucion = 250;
     int dañoContacto = 1;
@@ -110,6 +113,7 @@ private:
     int direccionPatrulla = 1;
     double tiempoPreparacion = 3;
     double tiempoRetirada = 0;
+    Dificultad dificultad = Dificultad::Normal;
 };
 
 class Llorente : public Personaje

@@ -3,6 +3,8 @@
 #include "logica/configuracion.h"
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
+#include <utility>
 
 Juego::Juego() : jugador(std::make_unique<Jerry>())
 {
@@ -28,14 +30,27 @@ void Juego::reiniciar()
         camaraX = 0;
         return;
     }
+    if (nivelActual == 2) {
+        obtenerNivel().reiniciar();
+        *jugador = inicioNivelCabildo ? *inicioNivelCabildo : Jerry();
+        jugador->establecerPosicion(static_cast<NivelCabildo &>(obtenerNivel()).obtenerInicio());
+        jugador->establecerEnSuelo(true);
+        obtenerJugador().restablecerVidas();
+        estado = EstadoJuego::Jugando;
+        pausado = false;
+        camaraX = 0;
+        return;
+    }
     prepararIntento(false);
 }
 void Juego::nuevaPartida() { partidaGuardada.reset(); prepararIntento(true); }
 
 void Juego::prepararIntento(bool nuevaPartida)
 {
+    sonidosPendientes.clear();
     nivelActual = 0;
     inicioNivelTienda.reset();
+    inicioNivelCabildo.reset();
     *jugador = Jerry();
     obtenerNivel().reiniciar();
     if (nuevaPartida)
@@ -47,9 +62,27 @@ void Juego::prepararIntento(bool nuevaPartida)
 
 void Juego::actualizar(double dt)
 {
+    if (!std::isfinite(dt) || dt < 0)
+        throw std::invalid_argument("El tiempo de actualización debe ser finito y no negativo.");
     if (estado != EstadoJuego::Jugando || dt <= 0)
         return;
+    const int vidas = jugador->obtenerVidas();
+    const int quesos = jugador->obtenerQuesos();
+    const int monedas = jugador->obtenerMonedas();
+    const bool llave = jugador->tieneLaLlave();
+    const int plaza = obtenerNivel().obtenerNumero() == 3
+                          ? static_cast<NivelCabildo &>(obtenerNivel()).obtenerPantalla() : -1;
     obtenerNivel().actualizar(dt, *jugador);
+    if (jugador->obtenerVidas() < vidas)
+        sonidosPendientes.push_back(EventoSonido::Dano);
+    if (jugador->obtenerQuesos() > quesos)
+        sonidosPendientes.push_back(EventoSonido::Queso);
+    if (jugador->obtenerMonedas() > monedas)
+        sonidosPendientes.push_back(EventoSonido::Moneda);
+    if (!llave && jugador->tieneLaLlave())
+        sonidosPendientes.push_back(EventoSonido::Recoger);
+    if (plaza >= 0 && static_cast<NivelCabildo &>(obtenerNivel()).obtenerPantalla() != plaza)
+        sonidosPendientes.push_back(EventoSonido::Avanzar);
     if (obtenerNivel().verificarDerrota(*jugador))
         estado = EstadoJuego::Derrota;
     actualizarCamara();
@@ -78,6 +111,17 @@ void Juego::cambiarNivel()
         jugador->establecerDireccion(0);
         camaraX = 0;
         inicioNivelTienda = std::make_unique<Jerry>(*jugador);
+    } else if (obtenerNivel().obtenerNumero() == 3) {
+        jugador->desactivarProteccion();
+        jugador->establecerPosicion(static_cast<NivelCabildo &>(obtenerNivel()).obtenerInicio());
+        jugador->establecerVelocidad({});
+        jugador->establecerDireccion(0);
+        jugador->establecerFlorero(false);
+        jugador->establecerAgachado(false);
+        jugador->establecerCarreraTienda(false);
+        jugador->establecerEnSuelo(true);
+        camaraX = 0;
+        inicioNivelCabildo = std::make_unique<Jerry>(*jugador);
     }
 }
 
@@ -85,11 +129,14 @@ void Juego::pasarNivel()
 {
     obtenerNivel().completar();
     cambiarNivel();
+    sonidosPendientes.push_back(estado == EstadoJuego::Victoria
+                                    ? EventoSonido::Victoria : EventoSonido::Avanzar);
 }
 
 void Juego::intentarEntrar()
 {
-    if (estado != EstadoJuego::Jugando || jugador->estaHerido())
+    if (estado != EstadoJuego::Jugando
+        || (jugador->estaHerido() && obtenerNivel().obtenerNumero() != 3))
         return;
     if (obtenerNivel().obtenerNumero() == 2) {
         auto &tienda = static_cast<NivelTienda &>(obtenerNivel());
@@ -97,9 +144,20 @@ void Juego::intentarEntrar()
             pasarNivel();
         } else if (tienda.entregarOrero(*jugador)) {
             pasarNivel();
+            obtenerNivel().mostrarMensaje(QString("¡Florero entregado! +%1 puntos. Continúa hacia el cabildo.")
+                                              .arg(NivelTienda::puntosEntregaFlorero));
         } else if (jugador->tieneElFlorero()) {
             obtenerNivel().mostrarMensaje("Acércate al mostrador, a la derecha, y pulsa E para entregar el florero.");
         }
+        return;
+    }
+    if (obtenerNivel().obtenerNumero() == 3) {
+        auto &cabildo = static_cast<NivelCabildo &>(obtenerNivel());
+        const int empujes = cabildo.obtenerEmpujes();
+        if (cabildo.interactuar(*jugador))
+            pasarNivel();
+        else if (cabildo.obtenerEmpujes() > empujes)
+            sonidosPendientes.push_back(EventoSonido::Empujar);
         return;
     }
     if (obtenerNivel().verificarVictoria(*jugador)) {
@@ -116,9 +174,23 @@ void Juego::presionarEspacio()
     if (estado != EstadoJuego::Jugando)
         return;
     if (obtenerNivel().obtenerNumero() == 2)
+    {
+        const bool teniaFlorero = jugador->tieneElFlorero();
         static_cast<NivelTienda &>(obtenerNivel()).intentarAtrapar(*jugador);
-    else
-        jugador->saltar(obtenerNivel().obtenerFisica());
+        if (!teniaFlorero && jugador->tieneElFlorero())
+            sonidosPendientes.push_back(EventoSonido::Recoger);
+    }
+    else if (obtenerNivel().obtenerNumero() != 3)
+        saltar();
+}
+
+void Juego::activarBurbuja()
+{
+    if (estado != EstadoJuego::Jugando || !jugador->estaVivo()
+        || obtenerNivel().obtenerNumero() != 2)
+        return;
+    jugador->activarProteccion(5);
+    obtenerNivel().mostrarMensaje("Burbuja de seguridad activa durante 5 segundos.");
 }
 
 void Juego::pausar()
@@ -160,12 +232,47 @@ void Juego::cargar()
     actualizarCamara();
 }
 
-void Juego::establecerDireccion(int direccion) { jugador->establecerDireccion(direccion); }
-void Juego::saltar() { if (estado == EstadoJuego::Jugando) jugador->saltar(obtenerNivel().obtenerFisica()); }
-void Juego::correr() { if (estado == EstadoJuego::Jugando) jugador->activarAgilidad(); }
+void Juego::establecerDireccion(int direccion, int vertical)
+{
+    if (obtenerNivel().obtenerNumero() == 3)
+        static_cast<NivelCabildo &>(obtenerNivel()).establecerDireccion(direccion, vertical);
+    else
+        jugador->establecerDireccion(direccion);
+}
+void Juego::saltar()
+{
+    if (estado != EstadoJuego::Jugando || obtenerNivel().obtenerNumero() != 1)
+        return;
+    const bool enSuelo = jugador->estaEnSuelo();
+    jugador->saltar(obtenerNivel().obtenerFisica());
+    if (enSuelo && !jugador->estaEnSuelo())
+        sonidosPendientes.push_back(EventoSonido::Salto);
+}
+void Juego::correr()
+{
+    if (estado == EstadoJuego::Jugando && obtenerNivel().obtenerNumero() == 1)
+        jugador->activarAgilidad();
+}
 EstadoJuego Juego::obtenerEstado() const { return estado; }
 Jerry &Juego::obtenerJugador() { return *jugador; }
 const Jerry &Juego::obtenerJugador() const { return *jugador; }
 Nivel &Juego::obtenerNivel() { return *niveles[size_t(nivelActual)]; }
 const Nivel &Juego::obtenerNivel() const { return *niveles[size_t(nivelActual)]; }
 double Juego::obtenerCamaraX() const { return camaraX; }
+
+void Juego::establecerDificultad(Dificultad valor)
+{
+    configuracionTom(valor);
+    for (auto &nivel : niveles)
+        nivel->establecerDificultad(valor);
+}
+
+Dificultad Juego::obtenerDificultad() const
+{
+    return obtenerNivel().obtenerDificultad();
+}
+
+vector<EventoSonido> Juego::consumirSonidos()
+{
+    return std::exchange(sonidosPendientes, {});
+}

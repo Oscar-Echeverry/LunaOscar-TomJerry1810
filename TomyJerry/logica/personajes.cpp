@@ -59,9 +59,8 @@ void Jerry::recoger(Objeto &objeto) { objeto.aplicarEfecto(*this); }
 
 void Jerry::activarAgilidad()
 {
-    if (tiempoAgilidad == 0 && tiempoRecarga == 0 && !estaHerido()) {
+    if (estaVivo() && !estaHerido()) {
         tiempoAgilidad = 2;
-        tiempoRecarga = 6;
     }
 }
 
@@ -70,10 +69,7 @@ void Jerry::actualizarEfectos(double dt)
     proteccion = std::max(0.0, proteccion - dt);
     tiempoHerida = std::max(0.0, tiempoHerida - dt);
     tiempoSaltoMejorado = std::max(0.0, tiempoSaltoMejorado - dt);
-    if (tiempoAgilidad > 0)
-        tiempoAgilidad = std::max(0.0, tiempoAgilidad - dt);
-    else
-        tiempoRecarga = std::max(0.0, tiempoRecarga - dt);
+    tiempoAgilidad = std::max(0.0, tiempoAgilidad - dt);
 }
 
 bool Jerry::puedeSalir() const
@@ -97,6 +93,7 @@ void Jerry::restablecerVidas()
     tiempoHerida = 0;
 }
 void Jerry::activarProteccion(double segundos) { proteccion = std::max(proteccion, std::max(0.0, segundos)); }
+void Jerry::desactivarProteccion() { proteccion = 0; }
 void Jerry::activarSaltoMejorado(double segundos) { tiempoSaltoMejorado = segundos; }
 void Jerry::establecerDireccion(int valor) { direccion = std::clamp(valor, -1, 1); }
 
@@ -111,6 +108,7 @@ void Jerry::reaparecer(Vector2 punto)
 
 void Jerry::sumarQueso(int cantidad) { quesos += cantidad; }
 void Jerry::sumarMoneda(int valor) { ++monedas; puntos += valor; }
+void Jerry::sumarPuntos(int cantidad) { puntos += std::max(0, cantidad); }
 void Jerry::establecerLlave(bool valor) { tieneLlave = valor; }
 void Jerry::establecerFlorero(bool valor) { tieneFlorero = valor; }
 void Jerry::establecerAgachado(bool valor) { agachado = valor; }
@@ -129,7 +127,6 @@ int Jerry::obtenerPuntos() const { return puntos; }
 bool Jerry::tieneLaLlave() const { return tieneLlave; }
 bool Jerry::tieneElFlorero() const { return tieneFlorero; }
 double Jerry::obtenerTiempoAgilidad() const { return tiempoAgilidad; }
-double Jerry::obtenerTiempoRecarga() const { return tiempoRecarga; }
 double Jerry::obtenerTiempoSaltoMejorado() const { return tiempoSaltoMejorado; }
 double Jerry::obtenerProteccion() const { return proteccion; }
 double Jerry::obtenerTiempoHerida() const { return tiempoHerida; }
@@ -151,16 +148,18 @@ void Tom::actualizarIA(double dt, Jerry &jugador)
 
 void Tom::perseguir(const Vector2 &objetivo, double dt)
 {
+    const auto ajustes = configuracionTom(dificultad);
     const double diferencia = objetivo.x - obtenerPosicion().x;
     const double distancia = std::abs(diferencia);
     if (tiempoPreparacion > 0) {
         if (distancia > 120)
-            moverEnCalle(objetivo.x - std::copysign(120.0, diferencia), 180, dt);
+            moverEnCalle(objetivo.x - std::copysign(120.0, diferencia), ajustes.rapidezCalle * 0.65, dt);
         else
             establecerVelocidad({});
         return;
     }
-    const double recuperacion = std::clamp((distancia - 320) * 0.15, 0.0, 50.0);
+    const double recuperacion = dificultad == Dificultad::Facil ? 0
+                                                                : std::clamp((distancia - 320) * 0.15, 0.0, 35.0);
     moverEnCalle(objetivo.x, velocidadPersecucion + recuperacion, dt);
 }
 
@@ -171,7 +170,8 @@ void Tom::patrullar(double dt)
         direccionPatrulla = -1;
     if (posicion.x < centroPatrulla - 170)
         direccionPatrulla = 1;
-    moverEnCalle(posicion.x + direccionPatrulla * 100, obtenerVelocidadBase(), dt);
+    moverEnCalle(posicion.x + direccionPatrulla * 100,
+                 configuracionTom(dificultad).rapidezCalle * 0.6, dt);
 }
 
 void Tom::interceptar(int zona, double dt)
@@ -233,7 +233,7 @@ void Tom::reiniciar(bool nuevaPartida)
     establecerVelocidad({});
     centroPatrulla = 100;
     direccionPatrulla = 1;
-    tiempoPreparacion = 3;
+    tiempoPreparacion = configuracionTom(dificultad).ventajaInicial;
     tiempoRetirada = 0;
     miraDerecha = true;
     agente.reiniciar(nuevaPartida);
@@ -242,6 +242,13 @@ void Tom::reiniciar(bool nuevaPartida)
 void Tom::retirarse(double segundos) { tiempoRetirada = segundos; }
 bool Tom::estaRetirandose() const { return tiempoRetirada > 0; }
 const AgenteTom &Tom::obtenerAgente() const { return agente; }
+void Tom::establecerDificultad(Dificultad valor)
+{
+    const auto ajustes = configuracionTom(valor);
+    dificultad = valor;
+    velocidadPersecucion = ajustes.rapidezCalle;
+}
+Dificultad Tom::obtenerDificultad() const { return dificultad; }
 
 Llorente::Llorente() : Personaje({}, 40, 90, 1, 0) {}
 void Llorente::actualizar(double) {}

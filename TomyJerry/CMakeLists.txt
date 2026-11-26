@@ -87,6 +87,10 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
         vista/vistajuego.cpp
         juego.h
         juego.cpp
+        sonido/sonidos.h
+        sonido/sonidos.cpp
+        logica/dificultad.h
+        logica/eventosonido.h
     )
 
 else()
