@@ -67,6 +67,12 @@ void VistaJuego::dibujarFondo(QPainter &painter)
                            recursos.obtenerFondoTienda(), recursos.obtenerFondoTienda().rect());
         return;
     }
+    if (nivel.obtenerNumero() == 3) {
+        const auto &cabildo = static_cast<const NivelCabildo &>(nivel);
+        const QPixmap &fondo = recursos.obtenerFondoCabildo(cabildo.obtenerPantalla());
+        painter.drawPixmap(QRectF(0, 0, 1120, 630), fondo, fondo.rect());
+        return;
+    }
     const Jerry &jerry = juego->obtenerJugador();
 
     painter.drawPixmap(0, 0, recursos.obtenerFondo());
@@ -91,6 +97,95 @@ void VistaJuego::dibujarFondo(QPainter &painter)
                              ? "E · Entrar a la tienda"
                              : "Tienda · 6 quesos + llave");
     }
+}
+
+void VistaJuego::dibujarEscenaCabildo(QPainter &painter)
+{
+    const auto *cabildo = dynamic_cast<const NivelCabildo *>(&juego->obtenerNivel());
+    if (!cabildo)
+        return;
+
+    // Las vallas visibles forman pasos estrechos bloqueados por cajas empujables.
+    for (const QRectF &valla : cabildo->obtenerVallas()) {
+        painter.setPen(QPen(QColor(60, 38, 22), 2));
+        painter.setBrush(QColor(153, 102, 55));
+        painter.drawRoundedRect(valla, 2, 2);
+        painter.setPen(QPen(QColor(223, 174, 100), 2));
+        for (double x = valla.left() + 8; x < valla.right(); x += 22)
+            painter.drawLine(QPointF(x, valla.top()), QPointF(x, valla.bottom()));
+    }
+
+    // Dos trazados sobre el suelo, con flechas en el sentido del cabildo.
+    auto dibujarRuta = [&painter](const QVector<Vector2> &ruta, const QColor &color,
+                                  Qt::PenStyle estilo) {
+        if (ruta.size() < 2)
+            return;
+        QPainterPath camino;
+        camino.moveTo(ruta.first().x, ruta.first().y);
+        for (int i = 1; i < ruta.size(); ++i)
+            camino.lineTo(ruta[i].x, ruta[i].y);
+        painter.setBrush(Qt::NoBrush);
+        painter.setPen(QPen(QColor(24, 38, 49, 165), 8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter.drawPath(camino);
+        painter.setPen(QPen(color, 4, estilo, Qt::RoundCap, Qt::RoundJoin));
+        painter.drawPath(camino);
+        double distancia = 0;
+        for (int i = 1; i < ruta.size(); ++i) {
+            distancia += ruta[i - 1].distancia(ruta[i]);
+            if (distancia < 75)
+                continue;
+            distancia = 0;
+            const QPointF fin(ruta[i].x, ruta[i].y);
+            QPointF direccion(ruta[i].x - ruta[i - 1].x, ruta[i].y - ruta[i - 1].y);
+            const double largo = std::hypot(direccion.x(), direccion.y());
+            if (largo < 0.001)
+                continue;
+            direccion /= largo;
+            const QPointF lado(-direccion.y(), direccion.x());
+            painter.setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap));
+            painter.drawLine(fin - direccion * 9 + lado * 5, fin);
+            painter.drawLine(fin - direccion * 9 - lado * 5, fin);
+        }
+    };
+    dibujarRuta(cabildo->obtenerRutaCorta(), QColor(255, 113, 91), Qt::SolidLine);
+    dibujarRuta(cabildo->obtenerRutaAlternativa(), QColor(103, 239, 175), Qt::DashLine);
+
+    const int pantalla = cabildo->obtenerPantalla();
+    const Vector2 puerta = cabildo->obtenerCabildo();
+    painter.setBrush(QColor(255, 217, 92, 85));
+    painter.setPen(QPen(QColor(255, 227, 136), 2));
+    painter.drawEllipse(QPointF(puerta.x, puerta.y), 31, 12);
+    const QRectF letrero(puerta.x - 100, puerta.y - 55, 200, 27);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(24, 38, 49, 235));
+    painter.drawRoundedRect(letrero, 7, 7);
+    painter.setPen(QColor(255, 230, 153));
+    usarFuente(painter, 12);
+    painter.drawText(letrero, Qt::AlignCenter,
+                     pantalla == 4 ? "CABILDO · E: ENTREGAR" : "ARCO A LA SIGUIENTE PLAZA ↑");
+
+    painter.setPen(Qt::NoPen);
+    const QVector<Vector2> &rastro = cabildo->obtenerRastroJerry();
+    for (int i = 0; i < rastro.size(); ++i) {
+        painter.setBrush(QColor(54, 101, 117, 20 + 65 * i / std::max(1, int(rastro.size()))));
+        painter.drawEllipse(QPointF(rastro[i].x, rastro[i].y - 8), 3, 2);
+    }
+
+}
+
+void VistaJuego::dibujarCajaCabildo(QPainter &painter, const QRectF &caja)
+{
+    painter.setPen(QPen(QColor(255, 221, 121), 2));
+    painter.setBrush(QColor(255, 208, 92, 35));
+    painter.drawRoundedRect(caja.adjusted(-3, -3, 3, 3), 4, 4);
+    const QPixmap &imagen = recursos.fotograma("caja_001", 0);
+    painter.drawPixmap(caja, imagen, imagen.rect());
+    const QRectF tecla(caja.center().x() - 8, caja.top() - 22, 16, 17);
+    painter.setBrush(QColor(24, 38, 49, 235));
+    painter.drawRoundedRect(tecla, 3, 3);
+    painter.setPen(QColor(255, 245, 205));
+    usarFuente(painter, 12);
+    painter.drawText(tecla, Qt::AlignCenter, "E");
 }
 
 void VistaJuego::dibujarEscenaTienda(QPainter &painter)
@@ -263,12 +358,21 @@ void VistaJuego::dibujarTom(QPainter &painter)
         abs(velocidad.x) + abs(velocidad.y) < 1 ? "tom_quieto" :
             abs(velocidad.x) > 170 ? "tom_correr" : "tom_caminar";
 
-    const double altura = 102 - (Configuracion::sueloY - posicion.y) * 0.18;
+    const double altura = juego->obtenerNivel().obtenerNumero() == 3
+                              ? 48 : 102 - (Configuracion::sueloY - posicion.y) * 0.18;
 
     dibujarFigura(painter,
                   recursos.fotograma(accion,
                                      juego->obtenerNivel().obtenerTiempo(), 11),
                   posicion.x, posicion.y, altura, tom.miraHaciaDerecha());
+    if (const auto *cabildo = dynamic_cast<const NivelCabildo *>(&juego->obtenerNivel())) {
+        if (cabildo->tomEstaAturdido()) {
+            painter.setPen(QColor(255, 229, 110));
+            usarFuente(painter, 13);
+            painter.drawText(QRectF(posicion.x - 45, posicion.y - 68, 90, 20),
+                             Qt::AlignCenter, "★ 1 s ★");
+        }
+    }
 }
 
 void VistaJuego::dibujarJerry(QPainter &painter)
@@ -296,6 +400,9 @@ void VistaJuego::dibujarJerry(QPainter &painter)
             cuadros = 1;
             altura = reloj >= 2 ? 38 : 72;
         }
+    } else if (juego->obtenerNivel().obtenerNumero() == 3
+               && std::hypot(velocidad.x, velocidad.y) > 1) {
+        accion = "jerry_caminar";
     } else if (!jerry.estaEnSuelo()) {
         accion = "jerry_saltar";
 
@@ -315,7 +422,11 @@ void VistaJuego::dibujarJerry(QPainter &painter)
                      ? "jerry_correr" : "jerry_caminar";
     }
 
-    if (jerry.obtenerProteccion() > 0 &&
+    if (juego->obtenerNivel().obtenerNumero() == 3)
+        altura = 44;
+
+    const bool enPlaza = juego->obtenerNivel().obtenerNumero() == 3;
+    if (!enPlaza && jerry.obtenerProteccion() > 0 &&
         int(jerry.obtenerProteccion() * 12) % 2 == 0)
         painter.setOpacity(0.35);
 
@@ -328,12 +439,22 @@ void VistaJuego::dibujarJerry(QPainter &painter)
         36, 7));
 
     dibujarFigura(painter, recursos.fotograma(accion, reloj, cuadros),
-                  posicion.x, min(posicion.y, Configuracion::sueloY),
+                  posicion.x, juego->obtenerNivel().obtenerNumero() == 3
+                      ? posicion.y : min(posicion.y, Configuracion::sueloY),
                   altura, jerry.miraHaciaDerecha());
 
     if (jerry.tieneElFlorero())
         dibujarFlorero(painter, posicion.x + (jerry.miraHaciaDerecha() ? 19 : -19),
                        posicion.y - (jerry.estaAgachado() ? 14 : 24), 25);
+    if (juego->obtenerNivel().obtenerNumero() == 3) {
+        painter.setPen(QPen(QColor(110, 77, 42), 1));
+        painter.setBrush(QColor(248, 226, 170));
+        painter.drawRoundedRect(QRectF(posicion.x + 12, posicion.y - 38, 20, 13), 2, 2);
+        painter.drawLine(QPointF(posicion.x + 15, posicion.y - 34),
+                         QPointF(posicion.x + 28, posicion.y - 34));
+        painter.drawLine(QPointF(posicion.x + 15, posicion.y - 30),
+                         QPointF(posicion.x + 25, posicion.y - 30));
+    }
 
     painter.setOpacity(1);
 
@@ -353,6 +474,57 @@ void VistaJuego::dibujarJerry(QPainter &painter)
     }
 }
 
+void VistaJuego::dibujarActoresCabildo(QPainter &painter)
+{
+    const auto &cabildo = static_cast<const NivelCabildo &>(juego->obtenerNivel());
+    struct Actor {
+        double piesY;
+        int tipo;
+        int indice;
+    };
+    QVector<Actor> actores;
+    const QVector<Habitante> &habitantes = juego->obtenerNivel().obtenerHabitantes();
+    for (int i = 0; i < habitantes.size(); ++i)
+        actores.append({habitantes[i].piesY, 0, i});
+    actores.append({juego->obtenerNivel().obtenerTom().obtenerPosicion().y, 1, 0});
+    actores.append({juego->obtenerJugador().obtenerPosicion().y, 2, 0});
+    const auto &decorados = cabildo.obtenerEscenografia();
+    for (int i = 0; i < decorados.size(); ++i)
+        actores.append({decorados[i].profundidad, 3, i});
+    const auto &cajas = cabildo.obtenerCajas();
+    for (int i = 0; i < cajas.size(); ++i)
+        actores.append({cajas[i].rectangulo.bottom(), 4, i});
+    std::stable_sort(actores.begin(), actores.end(), [](const Actor &a, const Actor &b) {
+        return a.piesY < b.piesY;
+    });
+
+    for (const Actor &actor : actores) {
+        if (actor.tipo == 0) {
+            const Habitante &habitante = habitantes[actor.indice];
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QColor(31, 24, 18, 55));
+            painter.drawEllipse(QRectF(habitante.x - 13, habitante.piesY - 2, 26, 5));
+            dibujarFigura(painter, recursos.fotograma(habitante.animacion,
+                                                      juego->obtenerNivel().obtenerTiempo(), 5), habitante.x,
+                          habitante.piesY, habitante.altura, habitante.direccion > 0);
+        } else if (actor.tipo == 1) {
+            dibujarTom(painter);
+        } else if (actor.tipo == 2) {
+            dibujarJerry(painter);
+        } else if (actor.tipo == 3) {
+            const QRectF &destino = decorados[actor.indice].imagen;
+            const QPixmap &fondo = recursos.obtenerFondoCabildo(cabildo.obtenerPantalla());
+            const QRectF origen(destino.x() * fondo.width() / 1120.0,
+                                destino.y() * fondo.height() / 630.0,
+                                destino.width() * fondo.width() / 1120.0,
+                                destino.height() * fondo.height() / 630.0);
+            painter.drawPixmap(destino, fondo, origen);
+        } else {
+            dibujarCajaCabildo(painter, cajas[actor.indice].rectangulo);
+        }
+    }
+}
+
 void VistaJuego::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -365,53 +537,58 @@ void VistaJuego::paintEvent(QPaintEvent *)
     painter.setRenderHints(QPainter::Antialiasing |
                            QPainter::SmoothPixmapTransform);
 
+    const bool esCabildo = juego->obtenerNivel().obtenerNumero() == 3;
+    const int altoEscena = esCabildo ? Configuracion::altoFondo : Configuracion::altoVista;
     const double escala = min(
         width() / double(Configuracion::anchoVista),
-        height() / double(Configuracion::altoVista));
+        height() / double(altoEscena));
 
     painter.translate(
         (width() - Configuracion::anchoVista * escala) / 2,
-        (height() - Configuracion::altoVista * escala) / 2);
+        (height() - altoEscena * escala) / 2);
 
     painter.scale(escala, escala);
 
     painter.setClipRect(0, 0,
                         Configuracion::anchoVista,
-                        Configuracion::altoVista);
+                        altoEscena);
 
     painter.save();
 
     painter.translate(-juego->obtenerCamaraX(),
-                      -Configuracion::inicioVista);
+                      esCabildo ? 0 : -Configuracion::inicioVista);
 
     const Nivel &nivel = juego->obtenerNivel();
     dibujarFondo(painter);
     if (nivel.obtenerNumero() == 2)
         dibujarEscenaTienda(painter);
+    else if (nivel.obtenerNumero() == 3)
+        dibujarEscenaCabildo(painter);
 
-    for (const Habitante &habitante : nivel.obtenerHabitantes()) {
-        dibujarFigura(
-            painter,
-            recursos.fotograma(habitante.animacion,
-                               nivel.obtenerTiempo(), 5),
-            habitante.x,
-            habitante.piesY,
-            habitante.altura,
-            habitante.direccion > 0);
+    if (nivel.obtenerNumero() != 3) {
+        for (const Habitante &habitante : nivel.obtenerHabitantes()) {
+            dibujarFigura(painter, recursos.fotograma(habitante.animacion,
+                                                      nivel.obtenerTiempo(), 5), habitante.x, habitante.piesY,
+                          habitante.altura, habitante.direccion > 0);
+        }
     }
 
-    if (nivel.obtenerTom().obtenerPosicion().y <=
-        Configuracion::sueloY - 18)
+    if (nivel.obtenerNumero() != 3 && nivel.obtenerTom().obtenerPosicion().y <=
+                                          Configuracion::sueloY - 18)
         dibujarTom(painter);
 
-    dibujarPlataformas(painter);
-    dibujarObjetos(painter);
+    if (nivel.obtenerNumero() != 3) {
+        dibujarPlataformas(painter);
+        dibujarObjetos(painter);
+    }
 
-    if (nivel.obtenerTom().obtenerPosicion().y >
-        Configuracion::sueloY - 18)
+    if (nivel.obtenerNumero() != 3 && nivel.obtenerTom().obtenerPosicion().y >
+                                          Configuracion::sueloY - 18)
         dibujarTom(painter);
-
-    dibujarJerry(painter);
+    if (nivel.obtenerNumero() == 3)
+        dibujarActoresCabildo(painter);
+    else
+        dibujarJerry(painter);
 
     painter.restore();
 
@@ -419,6 +596,6 @@ void VistaJuego::paintEvent(QPaintEvent *)
         painter.fillRect(
             QRectF(0, 0,
                    Configuracion::anchoVista,
-                   Configuracion::altoVista),
+                   altoEscena),
             QColor(12, 23, 31, 145));
 }

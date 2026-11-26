@@ -1,15 +1,19 @@
 #include "recursosgraficos.h"
+#include "logica/niveles.h"
 #include <QImage>
 #include <QPainter>
 #include <QLinearGradient>
 #include <algorithm>
 #include <QDebug>
+#include <stdexcept>
 
 using namespace std;
 
 RecursosGraficos::RecursosGraficos()
 {
     cargarRecursos();
+    if (!recursosFaltantes.isEmpty())
+        throw std::runtime_error(("Faltan imágenes del juego:\n" + recursosFaltantes.join('\n')).toStdString());
     prepararFondo();
 }
 
@@ -82,8 +86,7 @@ void RecursosGraficos::cargarRecursos()
         QStringLiteral("Entrada colonial de tienda bogotana-1.png"),
         QStringLiteral("Pasillo de telas coloniales-2.png"),
         QStringLiteral("Exhibicion de ceramica colonial-3.png"),
-        QStringLiteral("Mostrador colonial de la tienda-4.png"),
-        QStringLiteral("Salida trasera al patio colonial-5.png")
+        QStringLiteral("Mostrador colonial de la tienda-4.png")
     };
     fondoTienda = QPixmap(nombresFondosTienda.size() * anchoVista, altoVista);
     fondoTienda.fill(QColor(45, 33, 25));
@@ -100,6 +103,17 @@ void RecursosGraficos::cargarRecursos()
             QRect(i * anchoVista, 0, anchoVista, altoVista),
             panel, panel.rect());
     }
+    for (int i = 0; i < 5; ++i) {
+        const QString ruta = ":/Pantallas/Pantallas/Nivel 3/" + NivelCabildo::nombreFondo(i);
+        const QPixmap panel(ruta);
+        if (panel.isNull()) {
+            recursosFaltantes.append(ruta);
+            qWarning() << "IMAGEN NO ENCONTRADA:" << ruta;
+            fondosCabildo.append(QPixmap());
+            continue;
+        }
+        fondosCabildo.append(panel);
+    }
     const QStringList nombresFondos = {
         QStringLiteral("Balcones coloniales con montanas andinas-1.png"),
         QStringLiteral("Casitas blancas bajo montanas andinas-2.png"),
@@ -115,8 +129,6 @@ void RecursosGraficos::cargarRecursos()
         if (fondo.isNull()) {
             recursosFaltantes.append(ruta);
             qWarning() << "IMAGEN NO ENCONTRADA:" << ruta;
-        } else {
-            qDebug() << "IMAGEN CARGADA:" << ruta;
         }
 
         fondos.append(fondo);
@@ -238,6 +250,11 @@ const QPixmap &RecursosGraficos::obtenerFondo() const
 }
 
 const QPixmap &RecursosGraficos::obtenerFondoTienda() const { return fondoTienda; }
+const QPixmap &RecursosGraficos::obtenerFondoCabildo(int pantalla) const
+{
+    static const QPixmap vacio;
+    return pantalla >= 0 && pantalla < fondosCabildo.size() ? fondosCabildo[pantalla] : vacio;
+}
 
 const QStringList &RecursosGraficos::obtenerErrores() const
 {

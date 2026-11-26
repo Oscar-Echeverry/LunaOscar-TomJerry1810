@@ -9,164 +9,27 @@
         <file>Pantallas/Nivel 2/Exhibicion de ceramica colonial-3.png</file>
         <file>Pantallas/Nivel 2/Mostrador colonial de la tienda-4.png</file>
         <file>Pantallas/Nivel 2/Pasillo de telas coloniales-2.png</file>
-        <file>Pantallas/Nivel 2/Salida trasera al patio colonial-5.png</file>
-        <file>Pantallas/Nivel 3/Fachada del Cabildo con puerta abierta-1.png</file>
-        <file>Pantallas/Nivel 3/Galeria del Cabildo al atardecer-3.png</file>
-        <file>Pantallas/Nivel 3/Patio del Cabildo al atardecer-4.png</file>
-        <file>Pantallas/Nivel 3/Plaza colonial rumbo al Cabildo-2.png</file>
-        <file>Pantallas/Nivel 3/Salon del Cabildo al atardecer-5.png</file>
+        <file>Pantallas/Nivel 3/01_Plaza_del_cabildo.png</file>
+        <file>Pantallas/Nivel 3/02_Plaza_del_mercado.png</file>
+        <file>Pantallas/Nivel 3/03_Plaza_abierta.png</file>
+        <file>Pantallas/Nivel 3/04_Plaza_rutas_secretas.png</file>
+        <file>Pantallas/Nivel 3/05_Plaza_fondo_recomendado.png</file>
     </qresource>
     <qresource prefix="/sprites">
-        <file>Sprites/1/antorcha_001.png</file>
-        <file>Sprites/1/antorcha_002.png</file>
-        <file>Sprites/1/antorcha_003.png</file>
-        <file>Sprites/1/bandera_001.png</file>
-        <file>Sprites/1/bandera_002.png</file>
-        <file>Sprites/1/bandera_003.png</file>
-        <file>Sprites/1/bandera_004.png</file>
         <file>Sprites/1/barril_001.png</file>
-        <file>Sprites/1/barril_002.png</file>
-        <file>Sprites/1/botella.png</file>
         <file>Sprites/1/caja_001.png</file>
-        <file>Sprites/1/caja_002.png</file>
-        <file>Sprites/1/corneta.png</file>
-        <file>Sprites/1/farol_001.png</file>
-        <file>Sprites/1/farol_002.png</file>
-        <file>Sprites/1/flores.png</file>
         <file>Sprites/1/llave_001.png</file>
-        <file>Sprites/1/llave_002.png</file>
-        <file>Sprites/1/mapa.png</file>
         <file>Sprites/1/moneda_001.png</file>
         <file>Sprites/1/moneda_002.png</file>
         <file>Sprites/1/moneda_003.png</file>
-        <file>Sprites/1/pergamino_001.png</file>
-        <file>Sprites/1/pergamino_002.png</file>
-        <file>Sprites/1/pluma.png</file>
-        <file>Sprites/1/plumas.png</file>
         <file>Sprites/1/queso_001.png</file>
-        <file>Sprites/1/queso_002.png</file>
-        <file>Sprites/1/queso_003.png</file>
-        <file>Sprites/1/queso_004.png</file>
-        <file>Sprites/1/saco_001.png</file>
-        <file>Sprites/1/saco_002.png</file>
-        <file>Sprites/1/sombrero.png</file>
-        <file>Sprites/1/tambor.png</file>
         <file>Sprites/1/tintero.png</file>
-        <file>Sprites/2/caballo_001.png</file>
-        <file>Sprites/2/caballo_002.png</file>
-        <file>Sprites/2/caballo_003.png</file>
-        <file>Sprites/2/caballo_004.png</file>
         <file>Sprites/2/campesino_001.png</file>
         <file>Sprites/2/campesino_002.png</file>
-        <file>Sprites/2/carruaje.png</file>
         <file>Sprites/2/dama_001.png</file>
         <file>Sprites/2/dama_002.png</file>
         <file>Sprites/2/dama_003.png</file>
         <file>Sprites/2/dama_004.png</file>
-        <file>Sprites/2/infante_001.png</file>
-        <file>Sprites/2/infante_002.png</file>
-        <file>Sprites/2/infante_003.png</file>
-        <file>Sprites/2/infante_004.png</file>
-        <file>Sprites/2/jaula.png</file>
-        <file>Sprites/2/soldado_001.png</file>
-        <file>Sprites/2/soldado_002.png</file>
-        <file>Sprites/2/soldado_003.png</file>
-        <file>Sprites/2/soldado_004.png</file>
-        <file>Sprites/2/soldado_005.png</file>
-        <file>Sprites/2/soldado_montado_001.png</file>
-        <file>Sprites/2/soldado_montado_002.png</file>
-        <file>Sprites/3/arco_001.png</file>
-        <file>Sprites/3/arco_002.png</file>
-        <file>Sprites/3/arco_003.png</file>
-        <file>Sprites/3/arco_004.png</file>
-        <file>Sprites/3/arco_005.png</file>
-        <file>Sprites/3/arco_006.png</file>
-        <file>Sprites/3/balcon_001.png</file>
-        <file>Sprites/3/balcon_002.png</file>
-        <file>Sprites/3/balcon_003.png</file>
-        <file>Sprites/3/balcon_004.png</file>
-        <file>Sprites/3/balcon_005.png</file>
-        <file>Sprites/3/balcon_006.png</file>
-        <file>Sprites/3/cesped_001.png</file>
-        <file>Sprites/3/cesped_002.png</file>
-        <file>Sprites/3/cesped_003.png</file>
-        <file>Sprites/3/cesped_004.png</file>
-        <file>Sprites/3/cesped_005.png</file>
-        <file>Sprites/3/cesped_006.png</file>
-        <file>Sprites/3/cesped_007.png</file>
-        <file>Sprites/3/columna_001.png</file>
-        <file>Sprites/3/columna_002.png</file>
-        <file>Sprites/3/columna_003.png</file>
-        <file>Sprites/3/columna_004.png</file>
-        <file>Sprites/3/columna_005.png</file>
-        <file>Sprites/3/columna_006.png</file>
-        <file>Sprites/3/columna_007.png</file>
-        <file>Sprites/3/columna_008.png</file>
-        <file>Sprites/3/columna_009.png</file>
-        <file>Sprites/3/columna_010.png</file>
-        <file>Sprites/3/columna_011.png</file>
-        <file>Sprites/3/escalera_001.png</file>
-        <file>Sprites/3/escalera_002.png</file>
-        <file>Sprites/3/escalera_003.png</file>
-        <file>Sprites/3/escalera_004.png</file>
-        <file>Sprites/3/farol_001.png</file>
-        <file>Sprites/3/farol_002.png</file>
-        <file>Sprites/3/farol_003.png</file>
-        <file>Sprites/3/farol_004.png</file>
-        <file>Sprites/3/farol_005.png</file>
-        <file>Sprites/3/farol_006.png</file>
-        <file>Sprites/3/ladrillo_001.png</file>
-        <file>Sprites/3/ladrillo_002.png</file>
-        <file>Sprites/3/ladrillo_003.png</file>
-        <file>Sprites/3/ladrillo_004.png</file>
-        <file>Sprites/3/ladrillo_005.png</file>
-        <file>Sprites/3/ladrillo_006.png</file>
-        <file>Sprites/3/ladrillo_007.png</file>
-        <file>Sprites/3/ladrillo_008.png</file>
-        <file>Sprites/3/ladrillo_009.png</file>
-        <file>Sprites/3/ladrillo_010.png</file>
-        <file>Sprites/3/ladrillo_011.png</file>
-        <file>Sprites/3/ladrillo_012.png</file>
-        <file>Sprites/3/madera_001.png</file>
-        <file>Sprites/3/madera_002.png</file>
-        <file>Sprites/3/madera_003.png</file>
-        <file>Sprites/3/madera_004.png</file>
-        <file>Sprites/3/madera_005.png</file>
-        <file>Sprites/3/madera_006.png</file>
-        <file>Sprites/3/madera_007.png</file>
-        <file>Sprites/3/madera_008.png</file>
-        <file>Sprites/3/madera_009.png</file>
-        <file>Sprites/3/piedra_001.png</file>
-        <file>Sprites/3/piedra_002.png</file>
-        <file>Sprites/3/piedra_003.png</file>
-        <file>Sprites/3/piedra_004.png</file>
-        <file>Sprites/3/piedra_005.png</file>
-        <file>Sprites/3/piedra_006.png</file>
-        <file>Sprites/3/piedra_007.png</file>
-        <file>Sprites/3/piedra_008.png</file>
-        <file>Sprites/3/piedra_009.png</file>
-        <file>Sprites/3/piedra_010.png</file>
-        <file>Sprites/3/piedra_011.png</file>
-        <file>Sprites/3/piedra_012.png</file>
-        <file>Sprites/3/techo_001.png</file>
-        <file>Sprites/3/techo_002.png</file>
-        <file>Sprites/3/techo_003.png</file>
-        <file>Sprites/3/techo_004.png</file>
-        <file>Sprites/3/techo_005.png</file>
-        <file>Sprites/3/techo_006.png</file>
-        <file>Sprites/3/techo_007.png</file>
-        <file>Sprites/3/techo_008.png</file>
-        <file>Sprites/3/techo_009.png</file>
-        <file>Sprites/4/atacar_001.png</file>
-        <file>Sprites/4/atacar_002.png</file>
-        <file>Sprites/4/atacar_003.png</file>
-        <file>Sprites/4/atacar_004.png</file>
-        <file>Sprites/4/atacar_005.png</file>
-        <file>Sprites/4/caer_001.png</file>
-        <file>Sprites/4/caer_002.png</file>
-        <file>Sprites/4/caer_003.png</file>
-        <file>Sprites/4/caer_004.png</file>
-        <file>Sprites/4/caer_005.png</file>
         <file>Sprites/4/caminar_001.png</file>
         <file>Sprites/4/caminar_002.png</file>
         <file>Sprites/4/caminar_003.png</file>
@@ -179,76 +42,25 @@
         <file>Sprites/4/correr_004.png</file>
         <file>Sprites/4/correr_005.png</file>
         <file>Sprites/4/correr_006.png</file>
-        <file>Sprites/4/herido_001.png</file>
-        <file>Sprites/4/herido_002.png</file>
-        <file>Sprites/4/herido_003.png</file>
-        <file>Sprites/4/herido_004.png</file>
-        <file>Sprites/4/herido_005.png</file>
         <file>Sprites/4/quieto_001.png</file>
         <file>Sprites/4/quieto_002.png</file>
         <file>Sprites/4/quieto_003.png</file>
         <file>Sprites/4/quieto_004.png</file>
         <file>Sprites/4/quieto_005.png</file>
-        <file>Sprites/4/saltar_001.png</file>
-        <file>Sprites/4/saltar_002.png</file>
-        <file>Sprites/4/saltar_003.png</file>
-        <file>Sprites/4/saltar_004.png</file>
-        <file>Sprites/4/saltar_005.png</file>
-        <file>Sprites/5/nina_bandera_001.png</file>
-        <file>Sprites/5/nina_bandera_002.png</file>
         <file>Sprites/5/nina_caminar_001.png</file>
         <file>Sprites/5/nina_caminar_002.png</file>
         <file>Sprites/5/nina_caminar_003.png</file>
         <file>Sprites/5/nina_caminar_004.png</file>
-        <file>Sprites/5/nina_celebrar_001.png</file>
-        <file>Sprites/5/nina_celebrar_002.png</file>
-        <file>Sprites/5/nina_celebrar_003.png</file>
-        <file>Sprites/5/nina_correr_001.png</file>
-        <file>Sprites/5/nina_correr_002.png</file>
-        <file>Sprites/5/nina_correr_003.png</file>
-        <file>Sprites/5/nina_correr_004.png</file>
-        <file>Sprites/5/nina_quieta.png</file>
-        <file>Sprites/5/nina_recoger_001.png</file>
-        <file>Sprites/5/nina_recoger_002.png</file>
-        <file>Sprites/5/nina_saltar_001.png</file>
-        <file>Sprites/5/nina_saltar_002.png</file>
-        <file>Sprites/5/nina_saltar_003.png</file>
-        <file>Sprites/5/nino_bandera_001.png</file>
-        <file>Sprites/5/nino_bandera_002.png</file>
         <file>Sprites/5/nino_caminar_001.png</file>
         <file>Sprites/5/nino_caminar_002.png</file>
         <file>Sprites/5/nino_caminar_003.png</file>
         <file>Sprites/5/nino_caminar_004.png</file>
-        <file>Sprites/5/nino_celebrar_001.png</file>
-        <file>Sprites/5/nino_celebrar_002.png</file>
-        <file>Sprites/5/nino_celebrar_003.png</file>
-        <file>Sprites/5/nino_correr_001.png</file>
-        <file>Sprites/5/nino_correr_002.png</file>
-        <file>Sprites/5/nino_correr_003.png</file>
-        <file>Sprites/5/nino_correr_004.png</file>
-        <file>Sprites/5/nino_quieto.png</file>
-        <file>Sprites/5/nino_saltar_001.png</file>
-        <file>Sprites/5/nino_saltar_002.png</file>
-        <file>Sprites/5/nino_saltar_003.png</file>
         <file>Sprites/5/perro_caminar_001.png</file>
         <file>Sprites/5/perro_caminar_002.png</file>
         <file>Sprites/5/perro_caminar_003.png</file>
-        <file>Sprites/5/perro_correr_001.png</file>
-        <file>Sprites/5/perro_correr_002.png</file>
-        <file>Sprites/5/perro_dormir.png</file>
-        <file>Sprites/5/perro_feliz.png</file>
-        <file>Sprites/5/perro_quieto.png</file>
-        <file>Sprites/5/perro_saltar.png</file>
-        <file>Sprites/6/atacar_001.png</file>
-        <file>Sprites/6/atacar_002.png</file>
-        <file>Sprites/6/atacar_003.png</file>
-        <file>Sprites/6/atacar_004.png</file>
-        <file>Sprites/6/atacar_005.png</file>
-        <file>Sprites/6/atacar_006.png</file>
         <file>Sprites/6/caer_001.png</file>
         <file>Sprites/6/caer_002.png</file>
         <file>Sprites/6/caer_003.png</file>
-        <file>Sprites/6/caer_004.png</file>
         <file>Sprites/6/caminar_001.png</file>
         <file>Sprites/6/caminar_002.png</file>
         <file>Sprites/6/caminar_003.png</file>
@@ -275,48 +87,20 @@
         <file>Sprites/6/saltar_003.png</file>
         <file>Sprites/6/saltar_004.png</file>
         <file>Sprites/6/saltar_005.png</file>
-        <file>Sprites/7/caer_001.png</file>
-        <file>Sprites/7/caer_002.png</file>
-        <file>Sprites/7/caer_003.png</file>
-        <file>Sprites/7/caer_004.png</file>
-        <file>Sprites/7/caminar_001.png</file>
-        <file>Sprites/7/caminar_002.png</file>
-        <file>Sprites/7/caminar_003.png</file>
-        <file>Sprites/7/caminar_004.png</file>
-        <file>Sprites/7/correr_001.png</file>
-        <file>Sprites/7/correr_002.png</file>
-        <file>Sprites/7/correr_003.png</file>
-        <file>Sprites/7/correr_004.png</file>
-        <file>Sprites/7/enojarse_001.png</file>
-        <file>Sprites/7/enojarse_002.png</file>
-        <file>Sprites/7/enojarse_003.png</file>
-        <file>Sprites/7/enojarse_004.png</file>
         <file>Sprites/7/florero_001.png</file>
         <file>Sprites/7/florero_002.png</file>
         <file>Sprites/7/florero_003.png</file>
         <file>Sprites/7/florero_004.png</file>
-        <file>Sprites/7/herido_001.png</file>
-        <file>Sprites/7/herido_002.png</file>
-        <file>Sprites/7/herido_003.png</file>
-        <file>Sprites/7/herido_004.png</file>
-        <file>Sprites/7/quieto_001.png</file>
-        <file>Sprites/7/quieto_002.png</file>
-        <file>Sprites/7/quieto_003.png</file>
-        <file>Sprites/7/quieto_004.png</file>
-        <file>Sprites/7/saltar_001.png</file>
-        <file>Sprites/7/saltar_002.png</file>
-        <file>Sprites/7/saltar_003.png</file>
-        <file>Sprites/7/saltar_004.png</file>
     </qresource>
-    <qresource prefix="/audios">
-        <file>sonido/audio/avanzar.wav</file>
-        <file>sonido/audio/dano.wav</file>
-        <file>sonido/audio/empujar.wav</file>
-        <file>sonido/audio/fondo.wav</file>
-        <file>sonido/audio/moneda.wav</file>
-        <file>sonido/audio/queso.wav</file>
-        <file>sonido/audio/recoger.wav</file>
-        <file>sonido/audio/salto.wav</file>
-        <file>sonido/audio/victoria.wav</file>
+    <qresource prefix="/sonidos">
+        <file alias="fondo.wav">sonido/audio/fondo.wav</file>
+        <file alias="recoger.wav">sonido/audio/recoger.wav</file>
+        <file alias="queso.wav">sonido/audio/queso.wav</file>
+        <file alias="moneda.wav">sonido/audio/moneda.wav</file>
+        <file alias="dano.wav">sonido/audio/dano.wav</file>
+        <file alias="empujar.wav">sonido/audio/empujar.wav</file>
+        <file alias="victoria.wav">sonido/audio/victoria.wav</file>
+        <file alias="salto.wav">sonido/audio/salto.wav</file>
+        <file alias="avanzar.wav">sonido/audio/avanzar.wav</file>
     </qresource>
 </RCC>
