@@ -1,5 +1,6 @@
 #include "pantallainicio.h"
 #include "ui_inicio.h"
+#include "logica/dificultad.h"
 
 #include <QPushButton>
 #include <QSignalBlocker>
@@ -9,9 +10,16 @@ PantallaInicio::PantallaInicio(QWidget *parent)
     , ui(new Ui::paginaInicio)
 {
     ui->setupUi(this);
-    establecerDificultad(Dificultad::Normal);
-    connect(ui->selectorDificultad, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int indice) { emit dificultadCambiada(Dificultad(indice)); });
+    connect(ui->selectorNivel, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int indice) {
+        const QStringList descripciones = {
+            "Reúne seis quesos y la llave para entrar a la tienda de Llorente.",
+            "Entra a la tienda, atrapa el florero y entrégalo en el mostrador.",
+            "Abre el paso empujando cajas y lleva el mensaje de los criollos al cabildo."
+        };
+        ui->descripcionInicio->setText(descripciones.value(indice));
+        actualizarControles();
+    });
+    actualizarControles();
     connect(ui->activarSonido, &QCheckBox::toggled, this, &PantallaInicio::sonidoCambiado);
 
     connect(ui->botonJugar,
@@ -20,25 +28,25 @@ PantallaInicio::PantallaInicio(QWidget *parent)
             &PantallaInicio::jugar);
 }
 
+int PantallaInicio::obtenerNivelSeleccionado() const
+{
+    return ui->selectorNivel->currentIndex() + 1;
+}
+
 PantallaInicio::~PantallaInicio()
 {
     delete ui;
 }
 
-void PantallaInicio::establecerDificultad(Dificultad valor)
+void PantallaInicio::actualizarControles()
 {
-    const QSignalBlocker bloqueo(ui->selectorDificultad);
-    ui->selectorDificultad->setCurrentIndex(int(valor));
-    ui->selectorDificultad->setToolTip(valor == Dificultad::Facil
-                                           ? "Tom es lento, ve menos y abandona pronto la búsqueda. Peligros más suaves."
-                                           : valor == Dificultad::Normal
-                                                 ? "Tom persigue a ritmo normal; usa los obstáculos y la carrera para escapar."
-                                                 : "Tom corre más, ve más lejos e intenta interceptarte. Peligros más rápidos.");
-    ui->controlesInicio->setText(QString(
-                                     "← → Caminar · Espacio Saltar · Mayús Correr · Esc Pausa\n"
-                                     "Cada queso mejora el salto durante 5 segundos. Tres vidas.\n"
-                                     "Tom te da %1 segundos de ventaja al comenzar.")
-                                     .arg(configuracionTom(valor).ventajaInicial, 0, 'f', 0));
+    ui->controlesInicio->setText(obtenerNivelSeleccionado() == 3
+        ? "Flechas / WASD Mover · E Empujar / Entregar · Esc Pausa"
+        : obtenerNivelSeleccionado() == 2
+            ? "← → Mover · Espacio Atrapar · E Entregar · Mayús Correr +40 % · Esc Pausa"
+            : QString("← → Caminar · Espacio Saltar · Mayús Correr +40 % · Esc Pausa\n"
+                      "Tom te da %1 segundos de ventaja al comenzar.")
+                          .arg(configuracionTom(Dificultad::Normal).ventajaInicial, 0, 'f', 0));
 }
 
 void PantallaInicio::establecerSonido(bool activo)

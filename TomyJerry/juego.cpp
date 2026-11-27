@@ -15,6 +15,25 @@ Juego::Juego() : jugador(std::make_unique<Jerry>())
 }
 
 void Juego::iniciar() { nuevaPartida(); }
+void Juego::mostrarSeleccionNivel()
+{
+    if (estado == EstadoJuego::Portada)
+        estado = EstadoJuego::Presentacion;
+}
+void Juego::volverAPortada()
+{
+    if (estado == EstadoJuego::Presentacion)
+        estado = EstadoJuego::Portada;
+}
+void Juego::iniciarNivel(int numero)
+{
+    if (numero < 1 || numero > int(niveles.size()))
+        throw std::invalid_argument("Selecciona un nivel entre 1 y 3.");
+    nuevaPartida();
+    while (obtenerNivel().obtenerNumero() < numero)
+        cambiarNivel();
+    actualizarCamara();
+}
 void Juego::reiniciar()
 {
     if (nivelActual == 1 && inicioNivelTienda) {
@@ -54,7 +73,10 @@ void Juego::prepararIntento(bool nuevaPartida)
     *jugador = Jerry();
     obtenerNivel().reiniciar();
     if (nuevaPartida)
-        obtenerNivel().reiniciarMemoria();
+        for (auto &nivel : niveles) {
+            nivel->establecerDificultad(Dificultad::Normal);
+            nivel->reiniciarMemoria();
+        }
     estado = EstadoJuego::Jugando;
     pausado = false;
     camaraX = 0;
@@ -90,6 +112,13 @@ void Juego::actualizar(double dt)
 
 void Juego::actualizarCamara()
 {
+    if (const auto *tienda = dynamic_cast<const NivelTienda *>(&obtenerNivel())) {
+        if (tienda->enConversacion()) {
+            camaraX = std::clamp(tienda->obtenerPuertaX() - Configuracion::anchoVista * 0.55,
+                                0.0, tienda->obtenerAncho() - Configuracion::anchoVista);
+            return;
+        }
+    }
     camaraX = std::clamp(jugador->obtenerPosicion().x - Configuracion::anchoVista * 0.42,
                          0.0, obtenerNivel().obtenerAncho() - Configuracion::anchoVista);
 }
@@ -122,6 +151,8 @@ void Juego::cambiarNivel()
         jugador->establecerEnSuelo(true);
         camaraX = 0;
         inicioNivelCabildo = std::make_unique<Jerry>(*jugador);
+        estado = EstadoJuego::SeleccionDificultad;
+        pausado = true;
     }
 }
 
@@ -140,12 +171,16 @@ void Juego::intentarEntrar()
         return;
     if (obtenerNivel().obtenerNumero() == 2) {
         auto &tienda = static_cast<NivelTienda &>(obtenerNivel());
-        if (tienda.verificarVictoria(*jugador)) {
-            pasarNivel();
-        } else if (tienda.entregarOrero(*jugador)) {
-            pasarNivel();
-            obtenerNivel().mostrarMensaje(QString("¡Florero entregado! +%1 puntos. Continúa hacia el cabildo.")
-                                              .arg(NivelTienda::puntosEntregaFlorero));
+        if (tienda.enConversacion()) {
+            tienda.avanzarDialogo();
+            actualizarCamara();
+            return;
+        }
+        if (tienda.entregarOrero(*jugador)) {
+            tienda.completar();
+            jugador->establecerDireccion(0);
+            estado = EstadoJuego::Invitacion;
+            sonidosPendientes.push_back(EventoSonido::Recoger);
         } else if (jugador->tieneElFlorero()) {
             obtenerNivel().mostrarMensaje("Acércate al mostrador, a la derecha, y pulsa E para entregar el florero.");
         }
@@ -167,6 +202,15 @@ void Juego::intentarEntrar()
         obtenerNivel().mostrarMensaje(QString("Para entrar necesitas 6 quesos (%1/6) y la llave (%2).")
                                           .arg(jugador->obtenerQuesos()).arg(jugador->tieneLaLlave() ? "sí" : "no"));
     }
+}
+
+void Juego::continuarAlCabildo()
+{
+    if (estado != EstadoJuego::Invitacion)
+        return;
+    estado = EstadoJuego::Jugando;
+    pasarNivel();
+    obtenerNivel().mostrarMensaje("¡Estás invitado al cabildo! Lleva el mensaje y abre el paso empujando las cajas con E.");
 }
 
 void Juego::presionarEspacio()
@@ -195,6 +239,11 @@ void Juego::activarBurbuja()
 
 void Juego::pausar()
 {
+    if (estado == EstadoJuego::SeleccionDificultad) {
+        pausado = false;
+        estado = EstadoJuego::Jugando;
+        return;
+    }
     if (estado == EstadoJuego::Jugando || estado == EstadoJuego::Pausa) {
         pausado = !pausado;
         estado = pausado ? EstadoJuego::Pausa : EstadoJuego::Jugando;
@@ -234,6 +283,11 @@ void Juego::cargar()
 
 void Juego::establecerDireccion(int direccion, int vertical)
 {
+    if (const auto *tienda = dynamic_cast<const NivelTienda *>(&obtenerNivel()))
+        if (tienda->enConversacion()) {
+            jugador->establecerDireccion(0);
+            return;
+        }
     if (obtenerNivel().obtenerNumero() == 3)
         static_cast<NivelCabildo &>(obtenerNivel()).establecerDireccion(direccion, vertical);
     else
@@ -263,8 +317,8 @@ double Juego::obtenerCamaraX() const { return camaraX; }
 void Juego::establecerDificultad(Dificultad valor)
 {
     configuracionTom(valor);
-    for (auto &nivel : niveles)
-        nivel->establecerDificultad(valor);
+    if (obtenerNivel().obtenerNumero() == 3)
+        obtenerNivel().establecerDificultad(valor);
 }
 
 Dificultad Juego::obtenerDificultad() const

@@ -55,6 +55,8 @@ set(PROJECT_SOURCES
 
     vista/pantallainicio.h
     vista/pantallainicio.cpp
+    vista/pantallaportada.h
+    vista/pantallaportada.cpp
     vista/inicio.ui
     vista/pantallapausa.h
     vista/pantallapausa.cpp
@@ -72,9 +74,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(TomyJerry
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        vista/pantallaportada.h
-        vista/pantallaportada.cpp
-
     )
 else()
     if(ANDROID)

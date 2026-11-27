@@ -25,6 +25,7 @@ void usarFuente(QPainter &painter, int tamaño)
 
 VistaJuego::VistaJuego(QWidget *parent) : QWidget(parent)
 {
+    relojIntro.start();
     setAttribute(Qt::WA_OpaquePaintEvent);
     setFocusPolicy(Qt::NoFocus);
     setMinimumSize(0, 300);
@@ -63,7 +64,8 @@ void VistaJuego::dibujarFondo(QPainter &painter)
 {
     const Nivel &nivel = juego->obtenerNivel();
     if (nivel.obtenerNumero() == 2) {
-        painter.drawPixmap(QRectF(0, 153, recursos.obtenerFondoTienda().width(), 630),
+        painter.drawPixmap(QRectF(0, Configuracion::fondoTiendaY, recursos.obtenerFondoTienda().width(),
+                                  Configuracion::altoFondoTienda),
                            recursos.obtenerFondoTienda(), recursos.obtenerFondoTienda().rect());
         return;
     }
@@ -105,7 +107,6 @@ void VistaJuego::dibujarEscenaCabildo(QPainter &painter)
     if (!cabildo)
         return;
 
-    // Las vallas visibles forman pasos estrechos bloqueados por cajas empujables.
     for (const QRectF &valla : cabildo->obtenerVallas()) {
         painter.setPen(QPen(QColor(60, 38, 22), 2));
         painter.setBrush(QColor(153, 102, 55));
@@ -115,7 +116,6 @@ void VistaJuego::dibujarEscenaCabildo(QPainter &painter)
             painter.drawLine(QPointF(x, valla.top()), QPointF(x, valla.bottom()));
     }
 
-    // Dos trazados sobre el suelo, con flechas en el sentido del cabildo.
     auto dibujarRuta = [&painter](const QVector<Vector2> &ruta, const QColor &color,
                                   Qt::PenStyle estilo) {
         if (ruta.size() < 2)
@@ -193,76 +193,59 @@ void VistaJuego::dibujarEscenaTienda(QPainter &painter)
     const auto *tienda = dynamic_cast<const NivelTienda *>(&juego->obtenerNivel());
     if (!tienda)
         return;
-    const double tiempo = juego->obtenerNivel().obtenerTiempo();
-    usarFuente(painter, 15);
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(24, 38, 49, 225));
-    const QRectF hud(22, 145, 186, 43);
-    painter.drawRoundedRect(hud, 10, 10);
-    painter.setPen(QColor(255, 244, 214));
-    painter.drawText(hud, Qt::AlignCenter, QString("TIEMPO  %1 s").arg(tienda->tiempoRestante(), 0, 'f', 1));
-
-    const double proteccion = juego->obtenerJugador().obtenerProteccion();
-    if (proteccion > 0) {
-        const QRectF escudo(220, 145, 190, 43);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(24, 68, 82, 225));
-        painter.drawRoundedRect(escudo, 10, 10);
-        painter.setPen(QColor(174, 239, 255));
-        usarFuente(painter, 14);
-        painter.drawText(escudo, Qt::AlignCenter,
-                         QString("PROTECCION  %1 s").arg(proteccion, 0, 'f', 1));
+    const double tiempo = tienda->obtenerTiempo();
+    const Vector2 llorente = tienda->obtenerLlorente().obtenerPosicion();
+    const QString dialogo = tienda->dialogoCriollos();
+    dibujarFigura(painter, recursos.fotograma(
+                      tienda->enConversacion() && dialogo.startsWith("Criollos: Don")
+                          ? "llorente_quieto" : "llorente_enojado",
+                      tiempo, 5), llorente.x, llorente.y, 170, false);
+    const QPixmap &fondo = recursos.obtenerFondoTienda();
+    const QRectF frente(3 * Configuracion::anchoVista + 760 * 1120.0 / 1672,
+                        Configuracion::fondoTiendaY + 505 * 630.0 / 941,
+                        675 * 1120.0 / 1672, 140 * 630.0 / 941);
+    const QRectF origen(frente.x(), frente.y() - Configuracion::fondoTiendaY,
+                        frente.width(), frente.height());
+    painter.drawPixmap(frente, fondo, origen);
+    const bool llevandoFlorero = juego->obtenerJugador().tieneElFlorero();
+    const double mostradorX = tienda->obtenerPuertaX();
+    painter.setPen(QPen(QColor(255, 222, 124), 2));
+    painter.setBrush(QColor(255, 208, 82, llevandoFlorero ? 85 : 35));
+    painter.drawEllipse(QRectF(mostradorX - 78, Configuracion::sueloY - 9, 156, 18));
+    const QRectF entrega(mostradorX - 125, 414, 250, 35);
+    painter.setBrush(QColor(33, 30, 22, 235));
+    painter.drawRoundedRect(entrega, 7, 7);
+    painter.setPen(QColor(255, 232, 164));
+    usarFuente(painter, 14);
+    painter.drawText(entrega, Qt::AlignCenter, "ENTREGAR FLORERO · E");
+    const double flechaY = 513 + std::sin(tiempo * 4) * 4;
+    painter.setPen(QPen(QColor(255, 223, 118), 5, Qt::SolidLine, Qt::RoundCap));
+    painter.drawLine(QPointF(mostradorX, flechaY - 17), QPointF(mostradorX, flechaY + 9));
+    painter.drawLine(QPointF(mostradorX - 9, flechaY), QPointF(mostradorX, flechaY + 9));
+    painter.drawLine(QPointF(mostradorX + 9, flechaY), QPointF(mostradorX, flechaY + 9));
+    if (tienda->enConversacion()) {
+        const QRectF conversacion(juego->obtenerCamaraX() + 70, 150, 980, 110);
+        painter.setPen(QPen(QColor(241, 186, 76), 2));
+        painter.setBrush(QColor(24, 38, 49, 240));
+        painter.drawRoundedRect(conversacion, 12, 12);
+        painter.setPen(QColor(255, 244, 214));
+        usarFuente(painter, 19);
+        painter.drawText(conversacion.adjusted(20, 12, -20, -30),
+                         Qt::AlignVCenter | Qt::TextWordWrap, dialogo);
+        painter.setPen(QColor(241, 186, 76));
+        usarFuente(painter, 12);
+        painter.drawText(conversacion.adjusted(20, 78, -20, -8), Qt::AlignRight | Qt::AlignVCenter,
+                         "E · Continuar diálogo");
+        return;
     }
-
-    if (juego->obtenerJugador().tieneElFlorero()) {
-        const double mostradorX = juego->obtenerNivel().obtenerPuertaX();
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(255, 217, 126, 90));
-        painter.drawEllipse(QRectF(mostradorX - 66, Configuracion::sueloY - 9, 132, 18));
-        painter.setBrush(QColor(24, 38, 49, 220));
-        const QRectF etiquetaMostrador(mostradorX - 93, 425, 186, 30);
-        painter.drawRoundedRect(etiquetaMostrador, 8, 8);
-        painter.setPen(QColor(255, 239, 197));
-        usarFuente(painter, 13);
-        painter.drawText(etiquetaMostrador, Qt::AlignCenter, "MOSTRADOR  ·  E");
-    }
-
-    if (!tienda->tieneOrero() && !tienda->estaCargando()) {
-        const double x = tienda->posicionAvisoX();
-        painter.setPen(QPen(QColor(255, 220, 128, 210), 2, Qt::DashLine));
-        painter.drawLine(QPointF(x, 280), QPointF(x, Configuracion::sueloY - 15));
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(255, 217, 126, 215));
-        painter.drawEllipse(QPointF(x, Configuracion::sueloY - 14), 9, 6);
-        painter.setPen(QColor(24, 38, 49));
-        usarFuente(painter, 11);
-        painter.drawText(QRectF(x - 64, 256, 128, 22), Qt::AlignCenter, "¡SEÑAL DE CAÍDA!");
-    }
-
-    painter.setPen(QPen(QColor(75, 35, 14), 3));
-    painter.setBrush(QColor(179, 75, 34));
-    const QRectF letrero(tienda->posicionLetreroX() - 62, 485, 124, 30);
-    painter.drawRoundedRect(letrero, 5, 5);
-    painter.setPen(QColor(255, 239, 197));
-    usarFuente(painter, 13);
-    painter.drawText(letrero, Qt::AlignCenter, "¡CUIDADO!");
-
     if (tienda->tieneOrero())
         dibujarFlorero(painter, tienda->posicionOreroX(), tienda->posicionOreroY() + 16, 32);
-    for (const QPointF &objeto : tienda->obtenerObjetosCaida()) {
+    for (const Proyectil &proyectil : tienda->obtenerObjetosCaida()) {
+        const Vector2 objeto = proyectil.obtenerPosicion();
         dibujarFigura(painter, recursos.fotograma("tintero", tiempo, 1),
-                      objeto.x(), objeto.y() + 14, 30);
-    }
-    if (tienda->tiempoParaObjeto() <= 0.5) {
-        const double x = tienda->posicionSiguienteObjetoX();
-        painter.setPen(QPen(QColor(255, 220, 128, 210), 2, Qt::DashLine));
-        painter.drawLine(QPointF(x, 300), QPointF(x, Configuracion::sueloY - 15));
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(255, 217, 126, 215));
-        painter.drawEllipse(QPointF(x, Configuracion::sueloY - 14), 8, 5);
+                      objeto.x, objeto.y + 14, 30);
     }
 }
-
 void VistaJuego::dibujarFlorero(QPainter &painter, double x, double baseY, double alto)
 {
     painter.save();
@@ -592,7 +575,30 @@ void VistaJuego::paintEvent(QPaintEvent *)
 
     painter.restore();
 
-    if (juego->obtenerEstado() != EstadoJuego::Jugando)
+    if (nivel.obtenerNumero() == 2 && juego->obtenerEstado() == EstadoJuego::Jugando
+        && juego->obtenerJugador().tieneElFlorero()) {
+        const double distancia = nivel.obtenerPuertaX() - juego->obtenerJugador().obtenerPosicion().x;
+        const QRectF indicacion(760, 16, 340, 60);
+        painter.setPen(QPen(QColor(241, 186, 76), 2));
+        painter.setBrush(QColor(24, 38, 49, 240));
+        painter.drawRoundedRect(indicacion, 10, 10);
+        painter.setPen(QColor(255, 232, 164));
+        usarFuente(painter, 18);
+        painter.drawText(indicacion.adjusted(10, 5, -10, -27), Qt::AlignCenter,
+                         std::abs(distancia) <= 78 ? "E · Entregar el florero"
+                             : distancia > 0 ? "Mostrador →" : "← Mostrador");
+        usarFuente(painter, 12);
+        painter.drawText(indicacion.adjusted(10, 33, -10, -6), Qt::AlignCenter,
+                         "Entrega el florero en la zona iluminada");
+    }
+
+    if (juego->obtenerEstado() == EstadoJuego::Presentacion) {
+        painter.fillRect(QRectF(0, 0, Configuracion::anchoVista, altoEscena), QColor(12, 23, 31, 170));
+        dibujarFigura(painter, recursos.fotograma("tom_correr", relojIntro.elapsed() / 1000.0, 8),
+                      103, altoEscena - 14, 190, true);
+        dibujarFigura(painter, recursos.fotograma("jerry_correr", relojIntro.elapsed() / 1000.0, 8),
+                      1017, altoEscena - 14, 130, false);
+    } else if (juego->obtenerEstado() != EstadoJuego::Jugando)
         painter.fillRect(
             QRectF(0, 0,
                    Configuracion::anchoVista,

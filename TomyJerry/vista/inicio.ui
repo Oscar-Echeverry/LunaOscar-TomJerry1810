@@ -216,7 +216,7 @@
    </palette>
   </property>
   <property name="windowTitle">
-   <string>La plaza de Santafé</string>
+   <string>Tom y Jerry: Caos en 1810 · Equipo 16</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -230,12 +230,12 @@ QPushButton:pressed { background-color: #dca33e; }
 QPushButton[secundario=&quot;true&quot;] { background-color: #304a56; color: #fff4d6; }
 QPushButton[secundario=&quot;true&quot;]:hover { background-color: #405e6b; }
 QFrame#paginaInicio { background-color: #182631; border: 1px solid #f1ba4c; border-radius: 18px; }
-QLabel#tituloInicio { font-size: 28px; font-weight: 700; } QLabel#firmaInicio { color: #f1ba4c; font-size: 12px; font-weight: 700; } QLabel#descripcionInicio { font-size: 16px; }
+QLabel#tituloInicio { font-size: 31px; font-weight: 700; color: #f1ba4c; } QLabel#firmaInicio { color: #f1ba4c; font-size: 13px; font-weight: 700; } QLabel#descripcionInicio { font-size: 16px; }
 </string>
   </property>
   <layout class="QVBoxLayout" name="layoutInicio">
    <property name="spacing">
-    <number>9</number>
+    <number>7</number>
    </property>
    <property name="leftMargin">
     <number>24</number>
@@ -252,7 +252,7 @@ QLabel#tituloInicio { font-size: 28px; font-weight: 700; } QLabel#firmaInicio { 
    <item>
     <widget class="QLabel" name="firmaInicio">
      <property name="text">
-      <string>TOM Y JERRY · CAOS EN 1810</string>
+      <string>TOM Y JERRY: CAOS EN 1810 · EQUIPO 16</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -262,7 +262,7 @@ QLabel#tituloInicio { font-size: 28px; font-weight: 700; } QLabel#firmaInicio { 
    <item>
     <widget class="QLabel" name="tituloInicio">
      <property name="text">
-      <string>La plaza de Santafé</string>
+      <string>Selecciona el nivel</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -272,9 +272,7 @@ QLabel#tituloInicio { font-size: 28px; font-weight: 700; } QLabel#firmaInicio { 
    <item>
     <widget class="QLabel" name="descripcionInicio">
      <property name="text">
-      <string>La plaza está llena de vida… y Tom te sigue.
-Reúne seis quesos, encuentra la llave y llega a Llorente.
-Pulsa E junto a la puerta para completar el recorrido.</string>
+      <string>Reúne seis quesos y la llave para entrar a la tienda de Llorente.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -287,9 +285,8 @@ Pulsa E junto a la puerta para completar el recorrido.</string>
    <item>
     <widget class="QLabel" name="controlesInicio">
      <property name="text">
-      <string>← → Caminar · Espacio Saltar · Mantén Mayús o pulsa Bloq Mayús para correr · Esc Pausa
-Cada queso mejora la altura del salto durante 5 segundos.
-Tres vidas. Sin límite de tiempo. Tienes 3 segundos de ventaja.</string>
+      <string>← → Caminar · Espacio Saltar · Mayús Correr +40 % · Esc Pausa
+Tres vidas. Reúne los quesos y la llave para llegar a la tienda.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -300,16 +297,20 @@ Tres vidas. Sin límite de tiempo. Tienes 3 segundos de ventaja.</string>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="layoutConfiguracion">
-     <item><widget class="QLabel" name="etiquetaDificultad"><property name="text"><string>Dificultad:</string></property></widget></item>
+    <layout class="QHBoxLayout" name="layoutNivel">
+     <item><widget class="QLabel" name="etiquetaNivel"><property name="text"><string>Nivel:</string></property></widget></item>
      <item>
-      <widget class="QComboBox" name="selectorDificultad">
-       <property name="currentIndex"><number>1</number></property>
-       <item><property name="text"><string>Fácil</string></property></item>
-       <item><property name="text"><string>Normal</string></property></item>
-       <item><property name="text"><string>Difícil</string></property></item>
+      <widget class="QComboBox" name="selectorNivel">
+       <property name="focusPolicy"><enum>Qt::NoFocus</enum></property>
+       <item><property name="text"><string>1 · Las calles de Santafé</string></property></item>
+       <item><property name="text"><string>2 · La tienda de Llorente</string></property></item>
+       <item><property name="text"><string>3 · Rumbo al cabildo</string></property></item>
       </widget>
      </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="layoutConfiguracion">
      <item><widget class="QCheckBox" name="activarSonido"><property name="text"><string>Sonido · M</string></property><property name="checked"><bool>true</bool></property></widget></item>
     </layout>
    </item>
@@ -325,7 +326,7 @@ Tres vidas. Sin límite de tiempo. Tienes 3 segundos de ventaja.</string>
       <enum>Qt::FocusPolicy::NoFocus</enum>
      </property>
      <property name="text">
-      <string>Jugar · Enter</string>
+      <string>Comenzar nivel · Enter</string>
      </property>
     </widget>
    </item>
