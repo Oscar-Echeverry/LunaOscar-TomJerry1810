@@ -121,7 +121,7 @@ QLabel#tituloPausa { font-size: 28px; font-weight: 700; } QLabel#firmaPausa { co
      <property name="text">
       <string>El escenario y las habilidades están detenidos.
 Reúne 6 quesos y la llave; después pulsa E junto a la tienda.
-Mayús: carrera +60 %. Cada pulsación renueva el impulso de 2 s, sin recarga.</string>
+Mayús: carrera +40 %. Cada pulsación renueva el impulso de 2 s, sin recarga.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -136,8 +136,8 @@ Mayús: carrera +60 %. Cada pulsación renueva el impulso de 2 s, sin recarga.</
      <item><widget class="QLabel" name="etiquetaDificultad"><property name="text"><string>Dificultad:</string></property></widget></item>
      <item>
       <widget class="QComboBox" name="selectorDificultad">
-       <property name="currentIndex"><number>1</number></property>
-       <item><property name="text"><string>Fácil</string></property></item>
+       <property name="focusPolicy"><enum>Qt::NoFocus</enum></property>
+       <property name="currentIndex"><number>0</number></property>
        <item><property name="text"><string>Normal</string></property></item>
        <item><property name="text"><string>Difícil</string></property></item>
       </widget>

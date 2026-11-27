@@ -44,7 +44,7 @@ void Jerry::actualizar(double dt)
         return;
     }
     const double factor = (tieneFlorero ? 0.75 : 1.0)
-                          * ((tiempoAgilidad > 0 || carreraTienda) ? 1.6 : 1.0);
+                          * ((tiempoAgilidad > 0 || carreraTienda) ? 1.4 : 1.0);
     mover({direccion * factor, 0}, dt);
 }
 
@@ -158,8 +158,7 @@ void Tom::perseguir(const Vector2 &objetivo, double dt)
             establecerVelocidad({});
         return;
     }
-    const double recuperacion = dificultad == Dificultad::Facil ? 0
-                                                                : std::clamp((distancia - 320) * 0.15, 0.0, 35.0);
+    const double recuperacion = std::clamp((distancia - 320) * 0.15, 0.0, 35.0);
     moverEnCalle(objetivo.x, velocidadPersecucion + recuperacion, dt);
 }
 
@@ -177,7 +176,7 @@ void Tom::patrullar(double dt)
 void Tom::interceptar(int zona, double dt)
 {
     if (nivel)
-        moverEnCalle((std::clamp(zona, 0, 3) + 0.5) * nivel->obtenerAncho() / 4,
+        moverEnCalle((std::clamp(zona, 0, 5) + 0.5) * nivel->obtenerAncho() / 6,
                      velocidadPersecucion * 0.9, dt);
 }
 
@@ -242,6 +241,11 @@ void Tom::reiniciar(bool nuevaPartida)
 void Tom::retirarse(double segundos) { tiempoRetirada = segundos; }
 bool Tom::estaRetirandose() const { return tiempoRetirada > 0; }
 const AgenteTom &Tom::obtenerAgente() const { return agente; }
+bool Tom::observarYDecidir(const Observacion &observacion, double dt)
+{
+    return agente.observarYDecidir(observacion, dificultad, dt);
+}
+void Tom::reiniciarObservacion() { agente.reiniciar(false); }
 void Tom::establecerDificultad(Dificultad valor)
 {
     const auto ajustes = configuracionTom(valor);

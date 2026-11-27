@@ -6,7 +6,7 @@
 
 PantallaPortada::PantallaPortada(QWidget *parent)
     : QWidget(parent), imagen(":/Pantallas/Pantallas/Intro.jpeg"),
-    botonJugar(new QPushButton(this))
+      botonJugar(new QPushButton(this))
 {
     if (imagen.isNull())
         throw std::runtime_error("No se pudo cargar Pantallas/Intro.jpeg.");

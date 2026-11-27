@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/Pantallas">
+        <file>Pantallas/Intro.jpeg</file>
         <file>Pantallas/Nivel 1/Balcones coloniales con montanas andinas-1.png</file>
         <file>Pantallas/Nivel 1/Casitas blancas bajo montanas andinas-2.png</file>
         <file>Pantallas/Nivel 1/Entrada colonial al barrio mercantil-5.png</file>
@@ -30,6 +31,19 @@
         <file>Sprites/2/dama_002.png</file>
         <file>Sprites/2/dama_003.png</file>
         <file>Sprites/2/dama_004.png</file>
+        <file>Sprites/2/soldado_001.png</file>
+        <file>Sprites/2/soldado_002.png</file>
+        <file>Sprites/2/soldado_003.png</file>
+        <file>Sprites/2/soldado_004.png</file>
+        <file>Sprites/2/soldado_005.png</file>
+        <file>Sprites/7/quieto_001.png</file>
+        <file>Sprites/7/quieto_002.png</file>
+        <file>Sprites/7/quieto_003.png</file>
+        <file>Sprites/7/quieto_004.png</file>
+        <file>Sprites/7/enojarse_001.png</file>
+        <file>Sprites/7/enojarse_002.png</file>
+        <file>Sprites/7/enojarse_003.png</file>
+        <file>Sprites/7/enojarse_004.png</file>
         <file>Sprites/4/caminar_001.png</file>
         <file>Sprites/4/caminar_002.png</file>
         <file>Sprites/4/caminar_003.png</file>

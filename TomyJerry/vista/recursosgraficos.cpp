@@ -157,6 +157,9 @@ void RecursosGraficos::cargarRecursos()
 
     cargarAnimacion("campesino", 2, "campesino", 2);
     cargarAnimacion("dama", 2, "dama", 4);
+    cargarAnimacion("soldado", 2, "soldado", 5);
+    cargarAnimacion("llorente_quieto", 7, "quieto", 4);
+    cargarAnimacion("llorente_enojado", 7, "enojarse", 4);
     cargarAnimacion("nino", 5, "nino_caminar", 4);
     cargarAnimacion("nina", 5, "nina_caminar", 4);
     cargarAnimacion("perro", 5, "perro_caminar", 3);

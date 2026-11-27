@@ -6,6 +6,7 @@
 #include <limits>
 #include <functional>
 #include <stdexcept>
+#include <QLineF>
 
 namespace {
 constexpr double escalaX = 1120.0 / 1672;
@@ -52,6 +53,7 @@ void NivelCabildo::cargar()
     mirandoY = -1;
     mensajeEntregado = false;
     empujes = 0;
+    obtenerTom().reiniciar(false);
     cargarPlaza();
     mostrarMensaje("¡Abre el paso! Acércate a la caja del camino y pulsa E para empujarla.");
 }
@@ -64,12 +66,9 @@ void NivelCabildo::cargarPlaza()
     cajas.clear();
     habitantes.clear();
     plataformas.clear();
-    // Coordenadas sobre las imágenes originales de 1672 x 941.
-    // Los puestos, muros, edificios, jardines y cajas del fondo son sólidos.
     auto solido = [this](double x, double y, double ancho, double alto) {
         puestos.append(QRectF(x * escalaX, y * escalaY, ancho * escalaX, alto * escalaY));
     };
-    // La parte alta se pinta delante de quien camina detrás; sólo la base ocupa suelo.
     auto decorado = [this, &solido](double x, double y, double ancho, double alto, double proporcionBase = 0.5) {
         const QRectF imagen(x * escalaX, y * escalaY, ancho * escalaX, alto * escalaY);
         escenografia.append({imagen, imagen.bottom()});
@@ -119,7 +118,6 @@ void NivelCabildo::cargarPlaza()
         solido(590, 0, 1082, 285);
         solido(0, 120, 75, 821);
         solido(0, 880, 1672, 61);
-        // Muros del rodeo de la izquierda, siguiendo los pasillos del dibujo.
         decorado(75, 150, 100, 55);
         solido(165, 150, 45, 90);
         decorado(210, 145, 290, 55);
@@ -144,7 +142,6 @@ void NivelCabildo::cargarPlaza()
         decorado(165, 690, 120, 75, 0.7);
         decorado(290, 620, 60, 70, 0.7);
         decorado(350, 365, 45, 60, 0.7);
-        // Puestos: techo y base se dibujan a distinta profundidad.
         decorado(490, 380, 115, 130);
         decorado(460, 565, 80, 185, 0.8);
         decorado(645, 295, 135, 110);
@@ -225,8 +222,6 @@ void NivelCabildo::cargarPlaza()
         break;
     default:
         posicionCabildo = punto(815, 395);
-        // Los callejones laterales continúan por encima de la fachada.
-        // Sus límites siguen las casas, en lugar de cerrar todo el ancho de la plaza.
         limitesPlaza = QRectF(165 * escalaX, 180 * escalaY, 1390 * escalaX, 690 * escalaY);
         solido(395, 0, 890, 335);
         solido(0, 0, 165, 941);
@@ -248,8 +243,6 @@ void NivelCabildo::cargarPlaza()
         decorado(840, 580, 90, 80);
         decorado(585, 760, 110, 65);
         decorado(935, 760, 110, 65);
-        // Las pilas ocupan suelo en su base; Jerry puede pasar por detrás
-        // y el dibujo de las cajas lo tapa a la profundidad correspondiente.
         decorado(365, 535, 95, 140, 0.35);
         decorado(1265, 215, 40, 65, 0.5);
         decorado(1370, 205, 100, 105, 0.5);
@@ -266,22 +259,19 @@ void NivelCabildo::cargarPlaza()
     puertaX = posicionCabildo.x;
     puntoSeguroX = posicionInicio.x;
     rastroJerry = {posicionInicio};
-    indiceRastroTom = 0;
     caminoTom.clear();
-    esperaCaminoTom = esperaRastro = 0;
+    esperaRastro = 0;
     tiempoTomAturdido = tiempoDañoHabitante = 0;
-    tiempoSinVerJerry = 0;
-    // Las señales siguen suelo transitable. Tom comienza sobre el camino corto;
-    // el rodeo penaliza acercarse a ese puesto de vigilancia.
+    habitantes.append({"soldado", posicionCabildo.x + 65, posicionCabildo.x + 65,
+                        posicionCabildo.y + 65, 38, 25, 12, -1});
     actualizarRutas(posicionInicio);
     obtenerTom().establecerPosicion(posicionVigilancia);
     obtenerTom().establecerVelocidad({});
+    obtenerTom().reiniciarObservacion();
 }
 
 void NivelCabildo::colocarCajaEnCamino()
 {
-    // Una abertura de 36 px para una caja de 32 px: Jerry (20 px) no cabe a su lado.
-    // Las vallas cruzan todo el camino; la caja puede deslizarse hacia suelo libre.
     const double y = posicionInicio.y - 45;
     for (int distancia = 0; distancia <= 300; distancia += 5) {
         for (int sentido : {1, -1}) {
@@ -321,7 +311,6 @@ void NivelCabildo::actualizarRutas(Vector2 inicio)
     posicionVigilancia = rutaCorta.isEmpty() ? posicionCabildo
                                              : rutaCorta[rutaCorta.size() * 3 / 5];
     rutaAlternativa = buscarCamino(inicio, posicionCabildo, 12, 12, true, ignorar);
-    // El rodeo lateral pasa junto a una caja empujable, fuera del camino corto.
     const int cajaDelRodeo[] = {1, 1, 1, 1, 0};
     const QRectF &cajaRodeo = cajas[cajaDelRodeo[pantallaActual]].rectangulo;
     const Vector2 pasoLateral{cajaRodeo.right() + 16, cajaRodeo.center().y() + 5};
@@ -365,10 +354,45 @@ bool NivelCabildo::tomEstaAturdido() const { return tiempoTomAturdido > 0; }
 void NivelCabildo::establecerDificultad(Dificultad valor)
 {
     Nivel::establecerDificultad(valor);
-    esperaCaminoTom = 0;
+    obtenerTom().reiniciarObservacion();
 }
 const QVector<QRectF> &NivelCabildo::obtenerVallas() const { return vallas; }
 int NivelCabildo::obtenerEmpujes() const { return empujes; }
+
+int NivelCabildo::zonaEnPlaza(Vector2 p) const
+{
+    const int columna = std::clamp(int((p.x - limitesPlaza.left()) * 3 / limitesPlaza.width()), 0, 2);
+    const int fila = std::clamp(int((p.y - limitesPlaza.top()) * 2 / limitesPlaza.height()), 0, 1);
+    return fila * 3 + columna;
+}
+
+Vector2 NivelCabildo::centroZona(int zona) const
+{
+    zona = std::clamp(zona, 0, 5);
+    return {limitesPlaza.left() + (zona % 3 + 0.5) * limitesPlaza.width() / 3,
+            limitesPlaza.top() + (zona / 3 + 0.5) * limitesPlaza.height() / 2};
+}
+
+bool NivelCabildo::hayLineaVision(Vector2 inicio, Vector2 destino) const
+{
+    const QLineF linea(inicio.x, inicio.y, destino.x, destino.y);
+    auto bloquea = [&linea](const QRectF &r) {
+        if (r.contains(linea.p1()) || r.contains(linea.p2()))
+            return true;
+        const QLineF bordes[] = {{r.topLeft(), r.topRight()}, {r.topRight(), r.bottomRight()},
+                                {r.bottomRight(), r.bottomLeft()}, {r.bottomLeft(), r.topLeft()}};
+        return std::any_of(std::begin(bordes), std::end(bordes), [&linea](const QLineF &borde) {
+            return linea.intersects(borde, nullptr) == QLineF::BoundedIntersection;
+        });
+    };
+    for (const QRectF &muro : puestos)
+        if (bloquea(muro))
+            return false;
+    for (const auto &caja : cajas)
+        if (bloquea(caja.rectangulo))
+            return false;
+    return true;
+}
 
 bool NivelCabildo::posicionLibre(const QRectF &rectangulo, int ignorarCaja) const
 {
@@ -387,7 +411,6 @@ QVector<Vector2> NivelCabildo::buscarCamino(Vector2 inicio, Vector2 destino,
                                             double semiancho, double alto, bool evitarVigilancia,
                                             int ignorarCaja) const
 {
-    // Red con el tamaño del actor: Tom rodea los sólidos y las cajas no sellan la salida.
     const auto indice = [](Vector2 p) {
         return std::clamp(int(std::round(p.y / pasoRed)), 0, filas - 1) * columnas
                + std::clamp(int(std::round(p.x / pasoRed)), 0, columnas - 1);
@@ -445,7 +468,6 @@ void NivelCabildo::actualizar(double dt, Jerry &jugador)
 {
     if (dt <= 0 || mensajeEntregado)
         return;
-    // Subpasos también si se usa el nivel fuera del bucle fijo del juego.
     if (dt > Configuracion::pasoTiempo + 0.000001) {
         while (dt > 0.000001) {
             const double paso = std::min(dt, Configuracion::pasoTiempo);
@@ -470,7 +492,6 @@ void NivelCabildo::actualizar(double dt, Jerry &jugador)
             p.x += paso.x;
         if (posicionLibre(cuerpo({p.x, p.y + paso.y})))
             p.y += paso.y;
-        // mover() también altera la velocidad; se asigna después la velocidad real.
         if (direccionX != 0)
             jugador.mover({double(direccionX), 0}, 0);
     }
@@ -482,7 +503,6 @@ void NivelCabildo::actualizar(double dt, Jerry &jugador)
         esperaRastro = 0;
         if (rastroJerry.size() > 80) {
             rastroJerry.removeFirst();
-            indiceRastroTom = std::max(0, indiceRastroTom - 1);
         }
     }
     actualizarCajas(dt, jugador);
@@ -499,7 +519,6 @@ void NivelCabildo::actualizar(double dt, Jerry &jugador)
         }
     }
     actualizarTom(dt, jugador);
-    // Los arcos marcados conectan las plazas. Sólo el último recibe el mensaje con E.
     if (jugador.estaVivo() && pantallaActual < 4 && p.distancia(posicionCabildo) < 34) {
         jugador.sumarPuntos(100);
         ++pantallaActual;
@@ -518,16 +537,22 @@ void NivelCabildo::actualizarCajas(double dt, Jerry &jugador)
     bool cajaDetenida = false;
     for (int i = 0; i < cajas.size(); ++i) {
         CajaDeslizable &caja = cajas[i];
-        if (std::hypot(caja.velocidad.x, caja.velocidad.y) < 1)
+        if (std::hypot(caja.velocidad.x, caja.velocidad.y) == 0)
             continue;
         const QRectF anterior = caja.rectangulo;
-        const QRectF destino = anterior.translated(caja.velocidad.x * dt, caja.velocidad.y * dt);
+        Proyectil deslizante({anterior.x(), anterior.y()});
+        deslizante.establecerVelocidad(caja.velocidad);
+        obtenerFisica().aplicarFriccion(deslizante, dt);
+        const Vector2 desplazada = deslizante.obtenerPosicion();
+        const QRectF destino(desplazada.x, desplazada.y, anterior.width(), anterior.height());
         if (!posicionLibre(destino, i) || destino.intersects(cuerpo(jugador.obtenerPosicion()))) {
             caja.velocidad = {};
             cajaDetenida = true;
             continue;
         }
         caja.rectangulo = destino;
+        caja.velocidad = deslizante.obtenerVelocidad();
+        cajaDetenida = cajaDetenida || std::hypot(caja.velocidad.x, caja.velocidad.y) == 0;
         huboMovimiento = true;
         if (buscarCamino(jugador.obtenerPosicion(), posicionCabildo, 10, 10,
                          false, pasoAbierto ? -1 : cajaDelPaso).isEmpty()) {
@@ -540,20 +565,12 @@ void NivelCabildo::actualizarCajas(double dt, Jerry &jugador)
         const bool golpe = caja.rectangulo.intersects(cuerpo(obtenerTom().obtenerPosicion(), 12, 12));
         if (golpe) {
             tiempoTomAturdido = 1.0;
-            caja.rectangulo = anterior; // Tom no queda dentro de un sólido al recuperarse.
+            caja.rectangulo = anterior;
             caja.velocidad = {};
             cajaDetenida = true;
             obtenerTom().establecerVelocidad({});
             mostrarMensaje("¡Tom está aturdido durante un segundo!");
-        } else {
-            caja.velocidad.x *= std::exp(-3.2 * dt);
-            caja.velocidad.y *= std::exp(-3.2 * dt);
-            if (std::hypot(caja.velocidad.x, caja.velocidad.y) < 7) {
-                caja.velocidad = {};
-                cajaDetenida = true;
-            }
         }
-        esperaCaminoTom = 0;
     }
     if (huboMovimiento && !pasoAbierto
         && !buscarCamino(jugador.obtenerPosicion(), posicionCabildo, 10, 10).isEmpty()) {
@@ -576,39 +593,45 @@ void NivelCabildo::actualizarTom(double dt, Jerry &jugador)
     const Vector2 antes = p;
     const Vector2 jerry = jugador.obtenerPosicion();
     const ConfiguracionTom ajustes = configuracionTom(dificultad);
-    tiempoSinVerJerry += dt;
-    esperaCaminoTom -= dt;
-    if (esperaCaminoTom <= 0) {
-        // Ve a Jerry a corta distancia; al perderlo busca las zonas que recuerda.
-        bool visible = p.distancia(jerry) < ajustes.radioVision;
-        for (int i = 1; visible && i < 12; ++i) {
-            const double t = i / 12.0;
-            visible = posicionLibre(cuerpo({p.x + (jerry.x - p.x) * t,
-                                            p.y + (jerry.y - p.y) * t}, 8, 16));
-        }
-        if (visible)
-            tiempoSinVerJerry = 0;
-        Vector2 objetivo = jerry;
-        // En difícil intenta cortar el paso según la dirección y velocidad observadas.
-        if (visible && ajustes.anticipacion > 0) {
-            const Vector2 velocidad = jugador.obtenerVelocidad();
-            const Vector2 predicha{jerry.x + velocidad.x * ajustes.anticipacion,
-                                   jerry.y + velocidad.y * ajustes.anticipacion};
+    PercepcionTom percepcion;
+    percepcion.establecerNivel(this);
+    const Observacion observacion = percepcion.percibir(tom, jugador);
+    if (tom.observarYDecidir(observacion, dt)) {
+        const TipoDecision decision = tom.obtenerAgente().obtenerDecision();
+        Vector2 objetivo = posicionVigilancia;
+        if (observacion.visible)
+            objetivo = observacion.posicionJerry;
+        if (observacion.visible && decision == TipoDecision::INTERCEPTAR) {
+            const Vector2 velocidad = observacion.velocidadJerry;
+            const Vector2 predicha{objetivo.x + velocidad.x * ajustes.anticipacion,
+                                   objetivo.y + velocidad.y * ajustes.anticipacion};
             if (posicionLibre(cuerpo(predicha, 12, 12)))
                 objetivo = predicha;
         }
-        if (!visible && tiempoSinVerJerry <= ajustes.tiempoBusqueda) {
-            if (p.distancia(rastroJerry[indiceRastroTom]) < 30
-                && indiceRastroTom < rastroJerry.size() - 1)
-                ++indiceRastroTom;
-            objetivo = rastroJerry[indiceRastroTom];
-        } else if (!visible) {
-            objetivo = posicionVigilancia;
+        if (!observacion.visible) {
+            const int zona = tom.obtenerAgente().obtenerAprendizaje().zonaMasFrecuente();
+            if (zona >= 0)
+                objetivo = centroZona(zona);
+            QVector<Vector2> candidatos;
+            for (double y = limitesPlaza.top() + 15; y < limitesPlaza.bottom(); y += 25)
+                for (double x = limitesPlaza.left() + 15; x < limitesPlaza.right(); x += 25)
+                    if ((zona < 0 || zonaEnPlaza({x, y}) == zona)
+                        && posicionLibre(cuerpo({x, y}, 12, 12)))
+                        candidatos.append({x, y});
+            std::sort(candidatos.begin(), candidatos.end(), [objetivo](Vector2 a, Vector2 b) {
+                return a.distancia(objetivo) < b.distancia(objetivo);
+            });
+            caminoTom.clear();
+            for (Vector2 candidato : candidatos) {
+                caminoTom = buscarCamino(p, candidato);
+                if (!caminoTom.isEmpty())
+                    break;
+            }
+        } else {
+            caminoTom = buscarCamino(p, objetivo);
+            if (caminoTom.isEmpty())
+                caminoTom = buscarCamino(p, observacion.posicionJerry);
         }
-        caminoTom = buscarCamino(p, objetivo);
-        if (caminoTom.isEmpty() && indiceRastroTom < rastroJerry.size() - 1)
-            ++indiceRastroTom;
-        esperaCaminoTom = ajustes.intervaloDecision;
     }
     double avanceDisponible = ajustes.rapidez * dt;
     while (!caminoTom.isEmpty() && avanceDisponible > 0.000001) {
@@ -621,7 +644,7 @@ void NivelCabildo::actualizarTom(double dt, Jerry &jugador)
             if (posicionLibre(cuerpo(siguiente, 12, 12)))
                 p = siguiente;
             else {
-                esperaCaminoTom = 0;
+                caminoTom.clear();
                 break;
             }
         }
@@ -657,10 +680,9 @@ bool NivelCabildo::empujarCaja(Jerry &jugador)
         return false;
     CajaDeslizable &caja = cajas[cercana];
     const QPointF haciaCaja = caja.rectangulo.center() - pies.center();
-    // E junto a una cara orienta a Jerry hacia esa caja, incluso si acababa de girar.
     mirandoX = std::abs(haciaCaja.x()) >= std::abs(haciaCaja.y()) ? (haciaCaja.x() > 0 ? 1 : -1) : 0;
     mirandoY = mirandoX == 0 ? (haciaCaja.y() > 0 ? 1 : -1) : 0;
-    caja.velocidad = {mirandoX * 330.0, mirandoY * 330.0};
+    caja.velocidad = {mirandoX * 180.0, mirandoY * 180.0};
     ++empujes;
     mostrarMensaje("¡Caja empujada! Se desliza y puede aturdir a Tom.");
     return true;

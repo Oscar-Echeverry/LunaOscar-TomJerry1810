@@ -5,13 +5,41 @@
 #include <QKeyEvent>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QResizeEvent>
+#include "vista/pantallaportada.h"
 #include <algorithm>
 
 Widget::Widget(QWidget *parent) : QWidget(parent), ui(std::make_unique<Ui::Widget>())
 {
     ui->setupUi(this);
+    portada = new PantallaPortada(this);
+    portada->setGeometry(rect());
+    connect(portada, &PantallaPortada::continuar, this, &Widget::mostrarSeleccionNivel);
+    paginaInvitacion = new QFrame(ui->panelEstado);
+    paginaInvitacion->setObjectName("paginaInvitacion");
+    paginaInvitacion->setStyleSheet("QFrame#paginaInvitacion { background: #182631; border: 2px solid #f1ba4c; border-radius: 18px; }");
+    auto *invitacionLayout = new QVBoxLayout(paginaInvitacion);
+    invitacionLayout->setContentsMargins(30, 22, 30, 22);
+    auto *invitacionTitulo = new QLabel("¡Estás invitado al cabildo!", paginaInvitacion);
+    invitacionTitulo->setAlignment(Qt::AlignCenter);
+    invitacionTitulo->setStyleSheet("font-size: 27px; font-weight: bold; color: #f1ba4c;");
+    invitacionLayout->addWidget(invitacionTitulo);
+    auto *invitacionTexto = new QLabel(QString(
+        "¡Florero entregado! +%1 puntos\n\n"
+        "Los criollos te invitan al cabildo de Santafé.\n"
+        "Lleva su mensaje, abre camino entre las cajas y evita a Tom.\n\n"
+        "Nivel 3 · El grito de independencia").arg(NivelTienda::puntosEntregaFlorero), paginaInvitacion);
+    invitacionTexto->setAlignment(Qt::AlignCenter);
+    invitacionTexto->setWordWrap(true);
+    invitacionLayout->addWidget(invitacionTexto);
+    auto *continuar = new QPushButton("Continuar al nivel 3 · Enter", paginaInvitacion);
+    continuar->setFocusPolicy(Qt::NoFocus);
+    invitacionLayout->addWidget(continuar);
+    connect(continuar, &QPushButton::clicked, this, &Widget::continuarAlCabildo);
+    ui->panelEstado->addWidget(paginaInvitacion);
     ui->vistaJuego->establecerJuego(&juego);
-    connect(ui->paginaInicio, &PantallaInicio::dificultadCambiada, this, &Widget::cambiarDificultad);
     connect(ui->paginaPausa, &PantallaPausa::dificultadCambiada, this, &Widget::cambiarDificultad);
     connect(ui->paginaInicio, &PantallaInicio::sonidoCambiado, this, &Widget::cambiarSonido);
     connect(ui->paginaPausa, &PantallaPausa::sonidoCambiado, this, &Widget::cambiarSonido);
@@ -63,6 +91,12 @@ void Widget::actualizarInterfaz()
 {
     const Jerry &jerry = juego.obtenerJugador();
     const EstadoJuego estado = juego.obtenerEstado();
+    const bool enMenu = estado == EstadoJuego::Portada || estado == EstadoJuego::Presentacion;
+    ui->cabecera->setVisible(!enMenu);
+    ui->barraIndicadores->setVisible(!enMenu);
+    portada->setVisible(estado == EstadoJuego::Portada);
+    if (estado == EstadoJuego::Portada)
+        portada->raise();
     QString corazones;
     for (int i = 0; i < 3; ++i)
         corazones += i < jerry.obtenerVidas() ? QStringLiteral("♥ ") : QStringLiteral("♡ ");
@@ -70,7 +104,7 @@ void Widget::actualizarInterfaz()
     const bool nivelTienda = juego.obtenerNivel().obtenerNumero() == 2;
     const bool nivelCabildo = juego.obtenerNivel().obtenerNumero() == 3;
     ui->etiquetaQuesos->setText(nivelCabildo ? "MENSAJE: EN MANOS"
-                                : nivelTienda ? (jerry.tieneElFlorero() ? "FLORERO: EN MANOS" : "FLORERO: POR ATRAPAR")
+                                : nivelTienda ? (jerry.tieneElFlorero() ? "FLORERO: EN MANOS" : "FLORERO: BUSCAR")
                                               : QString("QUESOS: %1 / 6").arg(jerry.obtenerQuesos()));
     ui->etiquetaLlave->setText((nivelTienda || nivelCabildo) ? "OBJETIVO: E" : (jerry.tieneLaLlave() ? "LLAVE: SÍ" : "LLAVE: NO"));
     ui->etiquetaPuntos->setText(QString("PUNTOS: %1").arg(jerry.obtenerPuntos()));
@@ -104,20 +138,27 @@ void Widget::actualizarInterfaz()
                                              ? "← → MOVER · ↓ AGACHARSE · ESPACIO ATRAPAR · B PROTECCION 5S · MAYUS CORRER · E ENTREGAR"
                                              : "← → CAMINAR     ·     ESPACIO SALTAR     ·     MAYÚS CORRER     ·     E ENTRAR     ·     ESC PAUSA");
     ui->etiquetaControles->setText(ui->etiquetaControles->text() + " · M SONIDO");
+    if (estado == EstadoJuego::Presentacion)
+        ui->etiquetaControles->setText("ELIGE NIVEL · ENTER COMENZAR · ESC VOLVER A LA INTRO");
+    if (estado == EstadoJuego::SeleccionDificultad)
+        ui->etiquetaControles->setText("NIVEL 3 · ELIGE NORMAL O DIFÍCIL · ENTER COMENZAR");
     if (estado == EstadoJuego::Victoria)
         ui->etiquetaControles->setText("N NUEVA PARTIDA · ESC SALIR · M SONIDO");
-    ui->paginaPausa->establecerNivel(nivel.obtenerNumero());
+    ui->paginaPausa->establecerNivel(nivel.obtenerNumero(), estado == EstadoJuego::SeleccionDificultad);
+    ui->paginaPausa->establecerDificultad(juego.obtenerDificultad());
     const QStringList &errores = ui->vistaJuego->obtenerErroresRecursos();
     ui->etiquetaAviso->setVisible(!errorAudio.isEmpty() || !errores.isEmpty()
-                                  || (estado == EstadoJuego::Jugando && nivel.hayMensaje()));
+                                  || (estado == EstadoJuego::Jugando && !nivelTienda && nivel.hayMensaje()));
     ui->etiquetaAviso->setText(!errorAudio.isEmpty() ? errorAudio : errores.isEmpty() ? nivel.obtenerMensaje()
                                                                                       : "Faltan imágenes. Revisa Recursos.qrc y vuelve a compilar.");
     ui->botonPausa->setEnabled(estado == EstadoJuego::Jugando || estado == EstadoJuego::Pausa);
     ui->botonPausa->setText(estado == EstadoJuego::Pausa ? "Reanudar · Esc" : "Pausa · Esc");
-    ui->panelEstado->setVisible(estado != EstadoJuego::Jugando);
-    if (estado == EstadoJuego::Presentacion) {
+    ui->panelEstado->setVisible(estado != EstadoJuego::Jugando && estado != EstadoJuego::Portada);
+    if (estado == EstadoJuego::Invitacion) {
+        ui->panelEstado->setCurrentWidget(paginaInvitacion);
+    } else if (estado == EstadoJuego::Presentacion) {
         ui->panelEstado->setCurrentWidget(ui->paginaInicio);
-    } else if (estado == EstadoJuego::Pausa) {
+    } else if (estado == EstadoJuego::Pausa || estado == EstadoJuego::SeleccionDificultad) {
         ui->panelEstado->setCurrentWidget(ui->paginaPausa);
     } else if (estado == EstadoJuego::Victoria || estado == EstadoJuego::Derrota) {
         ui->panelEstado->setCurrentWidget(ui->paginaResultado);
@@ -142,7 +183,9 @@ void Widget::iniciarIntento(bool nuevaPartida)
 {
     try {
         limpiarTeclas();
-        if (nuevaPartida)
+        if (nuevaPartida && juego.obtenerEstado() == EstadoJuego::Presentacion)
+            juego.iniciarNivel(ui->paginaInicio->obtenerNivelSeleccionado());
+        else if (nuevaPartida)
             juego.nuevaPartida();
         else
             juego.reiniciar();
@@ -167,6 +210,31 @@ void Widget::cambiarPausa()
     setFocus();
 }
 
+void Widget::continuarAlCabildo()
+{
+    juego.continuarAlCabildo();
+    limpiarTeclas();
+    acumulador = 0;
+    reloj.restart();
+    actualizarInterfaz();
+    ui->vistaJuego->update();
+    setFocus();
+}
+
+void Widget::mostrarSeleccionNivel()
+{
+    juego.mostrarSeleccionNivel();
+    actualizarInterfaz();
+    setFocus();
+}
+
+void Widget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    if (portada)
+        portada->setGeometry(rect());
+}
+
 void Widget::keyPressEvent(QKeyEvent *event)
 {
     try {
@@ -178,9 +246,22 @@ void Widget::keyPressEvent(QKeyEvent *event)
         const EstadoJuego estado = juego.obtenerEstado();
         if (tecla == Qt::Key_M) {
             cambiarSonido(!sonidos.estaActivo());
+        } else if (estado == EstadoJuego::Portada) {
+            if (tecla == Qt::Key_Return || tecla == Qt::Key_Enter || tecla == Qt::Key_Space)
+                mostrarSeleccionNivel();
         } else if (estado == EstadoJuego::Presentacion) {
             if (tecla == Qt::Key_Return || tecla == Qt::Key_Enter || tecla == Qt::Key_Space)
                 iniciarIntento(true);
+            else if (tecla == Qt::Key_Escape) {
+                juego.volverAPortada();
+                actualizarInterfaz();
+            }
+        } else if (estado == EstadoJuego::SeleccionDificultad) {
+            if (tecla == Qt::Key_Return || tecla == Qt::Key_Enter || tecla == Qt::Key_Space)
+                cambiarPausa();
+        } else if (estado == EstadoJuego::Invitacion) {
+            if (tecla == Qt::Key_Return || tecla == Qt::Key_Enter || tecla == Qt::Key_Space)
+                continuarAlCabildo();
         } else if (estado == EstadoJuego::Victoria && tecla == Qt::Key_Escape) {
             close();
         } else if (tecla == Qt::Key_Escape) {
@@ -247,7 +328,6 @@ void Widget::cambiarDificultad(Dificultad valor)
 {
     try {
         juego.establecerDificultad(valor);
-        ui->paginaInicio->establecerDificultad(valor);
         ui->paginaPausa->establecerDificultad(valor);
         actualizarInterfaz();
     } catch (const std::exception &error) {

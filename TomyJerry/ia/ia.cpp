@@ -79,7 +79,7 @@ void PercepcionTom::establecerNivel(const Nivel *valor)
 }
 
 TipoDecision RazonamientoTom::decidir(const Observacion &observacion, const AprendizajeTom &memoria,
-                                      Dificultad dificultad) const
+                                     Dificultad dificultad) const
 {
     if (observacion.visible) {
         if (observacion.distancia < distanciaAtaque)
@@ -123,7 +123,7 @@ void AccionTom::ejecutar(TipoDecision decision, const Observacion &observacion,
     case TipoDecision::INTERCEPTAR:
         if (observacion.visible) {
             tom.perseguir({observacion.posicionJerry.x + observacion.velocidadJerry.x
-                                                             * configuracionTom(tom.obtenerDificultad()).anticipacion,
+                              * configuracionTom(tom.obtenerDificultad()).anticipacion,
                            observacion.posicionJerry.y}, dt);
             break;
         }
