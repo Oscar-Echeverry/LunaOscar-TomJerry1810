@@ -2,7 +2,6 @@
 #define PANTALLAINICIO_H
 
 #include <QFrame>
-#include "logica/dificultad.h"
 
 namespace Ui {
 class paginaInicio;
@@ -15,15 +14,15 @@ class PantallaInicio : public QFrame
 public:
     explicit PantallaInicio(QWidget *parent = nullptr);
     ~PantallaInicio() override;
-    void establecerDificultad(Dificultad valor);
     void establecerSonido(bool activo);
+    int obtenerNivelSeleccionado() const;
 
 signals:
     void jugar();
-    void dificultadCambiada(Dificultad valor);
     void sonidoCambiado(bool activo);
 
 private:
+    void actualizarControles();
     Ui::paginaInicio *ui;
 };
 

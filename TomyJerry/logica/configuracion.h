@@ -9,5 +9,7 @@ constexpr double sueloY = 568;
 constexpr double anchoMundo = 5035;
 constexpr double puertaX = 4800.01;
 constexpr double pasoTiempo = 1.0 / 60.0;
+constexpr double fondoTiendaY = 40;
+constexpr double altoFondoTienda = 630;
 }
 #endif

@@ -11,7 +11,7 @@ class PantallaPausa : public QFrame
 public:
     explicit PantallaPausa(QWidget *parent = nullptr);
     ~PantallaPausa() override;
-    void establecerNivel(int nivel);
+    void establecerNivel(int nivel, bool elegirDificultad = false);
     void establecerDificultad(Dificultad valor);
     void establecerSonido(bool activo);
 

@@ -7,6 +7,13 @@ class Jerry;
 class Personaje;
 class FisicaJuego;
 
+class Proyectil : public Entidad
+{
+public:
+    using Entidad::Entidad;
+    void actualizar(double) override {}
+};
+
 class Objeto : public Entidad
 {
 public:

@@ -94,7 +94,7 @@ public:
     void cargar() override;
     void actualizar(double dt, Jerry &jugador) override;
     bool verificarVictoria(const Jerry &jugador) const override;
-    void configurarDificultad(int dificultad = 1);
+    void configurarDificultad(Dificultad dificultad = Dificultad::Normal);
     void establecerDificultad(Dificultad valor) override;
 
 private:
@@ -126,10 +126,13 @@ public:
     double posicionOreroX() const;
     double posicionOreroY() const;
     double posicionAvisoX() const;
-    double posicionLetreroX() const;
-    const QVector<QPointF> &obtenerObjetosCaida() const;
+    const QVector<Proyectil> &obtenerObjetosCaida() const;
     double posicionSiguienteObjetoX() const;
     double tiempoParaObjeto() const;
+    const Llorente &obtenerLlorente() const;
+    bool enConversacion() const;
+    QString dialogoCriollos() const;
+    void avanzarDialogo();
 
 private:
     void perderOrero(Jerry &jugador, const QString &motivo, bool perderVida = true);
@@ -137,17 +140,13 @@ private:
     double tiempoRestanteNivel = 60;
     double esperaLanzamiento = 1.2;
     double esperaReinicio = 0;
-    double oreroX = 0;
-    double oreroY = 0;
-    double velocidadOreroX = 0;
-    double velocidadOreroY = 0;
+    Proyectil floreroEnVuelo;
     double objetivoOreroX = 0;
     double avisoX = 0;
-    QVector<QPointF> objetosCaida;
+    QVector<Proyectil> objetosCaida;
     double siguienteObjetoX = 360;
     double esperaObjeto = 1.0;
-    double letreroX = 560;
-    int direccionLetrero = 1;
+    double tiempoConversacion = 0;
     int lanzamientos = 0;
     bool oreroVisible = false;
     bool cargando = false;
@@ -190,6 +189,9 @@ public:
     int obtenerEmpujes() const;
     static QString nombreFondo(int pantalla);
     static QString nombrePlaza(int pantalla);
+    bool hayLineaVision(Vector2 inicio, Vector2 destino) const;
+    int zonaEnPlaza(Vector2 posicion) const;
+    Vector2 centroZona(int zona) const;
 
 private:
     bool posicionLibre(const QRectF &cuerpo, int ignorarCaja = -1) const;
@@ -219,17 +221,14 @@ private:
     int direccionY = 0;
     int mirandoX = 0;
     int mirandoY = -1;
-    int indiceRastroTom = 0;
     double tiempoTomAturdido = 0;
     double tiempoDañoHabitante = 0;
     bool mensajeEntregado = false;
     QVector<Vector2> caminoTom;
-    double esperaCaminoTom = 0;
     double esperaRastro = 0;
     int cajaDelPaso = -1;
     int empujes = 0;
     bool pasoAbierto = false;
-    double tiempoSinVerJerry = 0;
 };
 
 #endif
